@@ -21,7 +21,7 @@ contract AttackerGatekeeperOne {
 
     function calling(uint256 _gas) external {
         bytes8 gatekey = bytes8(uint64(uint160(tx.origin))) &
-            0xFFFFFFFF0000FFFF;
+            0xA00000000000FFFF;
 
         gatekeeperOne.enter{gas: _gas}(gatekey);
     }

@@ -20,10 +20,10 @@ describe("GatekeeperOne", async function () {
   // };
 
 
-  it("Should set the right unlockTime", async function () {
+  it("Should complete the function with no error", async function () {
+    const [signer] = await ethers.getSigners()
     const GatekeeperOne = await ethers.getContractFactory("GatekeeperOne");
     const gatekeeperOne = await GatekeeperOne.deploy();
-    console.log('pedro edpe')
     await gatekeeperOne.deployed();
 
     const AttackerGatekeeperOne = await ethers.getContractFactory("AttackerGatekeeperOne");
@@ -41,7 +41,7 @@ describe("GatekeeperOne", async function () {
 
       }
     }
-
+    expect(await gatekeeperOne.entrant()).to.eq(signer.address)
   });
 
 });
