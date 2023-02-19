@@ -26,10 +26,10 @@ describe("GatekeeperTwo", async function () {
     const gatekeeperTwo = await GatekeeperTwo.deploy();
     await gatekeeperTwo.deployed();
 
-    const AttackerGatekeeperTwo = await ethers.getContractFactory("AttackerGatekeeperTwo");
-    const attackerGatekeeperTwo = await AttackerGatekeeperTwo.deploy(gatekeeperTwo.address);
+    const GatekeeperTwoAttacker = await ethers.getContractFactory("GatekeeperTwoAttacker");
+    const gatekeeperTwoAttacker = await GatekeeperTwoAttacker.deploy(gatekeeperTwo.address);
 
-    await attackerGatekeeperTwo.deployed();
+    await gatekeeperTwoAttacker.deployed();
 
     expect(await gatekeeperTwo.entrant()).to.eq(signer.address)
   });

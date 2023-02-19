@@ -12,7 +12,7 @@ interface GatekeeperTwoI {
     function enter(bytes8 _gateKey) external returns (bool);
 }
 
-contract AttackerGatekeeperTwo {
+contract GatekeeperTwoAttacker {
     GatekeeperTwoI gatekeeperTwo;
 
     constructor(address _gatekeeperTwo) {

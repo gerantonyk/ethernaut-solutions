@@ -26,15 +26,15 @@ describe("GatekeeperOne", async function () {
     const gatekeeperOne = await GatekeeperOne.deploy();
     await gatekeeperOne.deployed();
 
-    const AttackerGatekeeperOne = await ethers.getContractFactory("AttackerGatekeeperOne");
-    const attackerGatekeeperOne = await AttackerGatekeeperOne.deploy(gatekeeperOne.address);
+    const GatekeeperOneAttacker = await ethers.getContractFactory("GatekeeperOneAttacker");
+    const gatekeeperOneAttacker = await GatekeeperOneAttacker.deploy(gatekeeperOne.address);
 
-    await attackerGatekeeperOne.deployed();
+    await gatekeeperOneAttacker.deployed();
 
     for (let i = 5 * 8191; i < 5 * 8191 + 8191; i++) {
 
       try {
-        await attackerGatekeeperOne.calling(i)
+        await gatekeeperOneAttacker.calling(i)
         console.log('gas:' + i)
         break;
       } catch (error) {
