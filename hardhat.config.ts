@@ -11,6 +11,10 @@ const config: HardhatUserConfig = {
       },
     },
   },
+  gasReporter: {
+    enabled: undefined,
+    currency: "USD",
+  },
 };
 
 export default config;
