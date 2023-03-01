@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-describe.only("MagicNumber", async function () {
+describe("MagicNumber", async function () {
 
   it("Should complete the function with no error", async function () {
     const [signer] = await ethers.getSigners()
