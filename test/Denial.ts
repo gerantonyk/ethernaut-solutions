@@ -1,10 +1,9 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-describe.only("Denial", async function () {
+describe("Denial", async function () {
 
   it("Should be reverted", async function () {
-    const [signer, attacker] = await ethers.getSigners()
     const Denial = await ethers.getContractFactory("Denial");
     const denial = await Denial.deploy();
     await denial.deployed();
