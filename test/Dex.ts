@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-describe.only("Dex", async function () {
+describe("Dex", async function () {
 
   it("Should deplete one of the tokens", async function () {
     const [signer] = await ethers.getSigners()
