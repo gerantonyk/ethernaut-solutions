@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-describe.only("PuzzleWallet", async function () {
+describe("PuzzleWallet", async function () {
 
   it("Should has the attacker has admin", async function () {
     const PuzzleWallet = await ethers.getContractFactory("PuzzleWallet");
