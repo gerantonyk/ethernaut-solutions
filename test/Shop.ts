@@ -3,7 +3,7 @@ import { ethers } from "hardhat";
 
 describe("Shop", async function () {
 
-  it("Should be call a view function ven thougth isn't view", async function () {
+  it("Should call a view function ven thougth isn't view", async function () {
     const Shop = await ethers.getContractFactory("Shop");
     const shop = await Shop.deploy();
     await shop.deployed();

