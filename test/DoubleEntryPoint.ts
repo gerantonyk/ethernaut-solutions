@@ -7,7 +7,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-describe.only("DoubleEntryPoint", async function () {
+describe("DoubleEntryPoint", async function () {
 
   it("Should avoid the exploit", async function () {
     const [deployer, player] = await ethers.getSigners()
