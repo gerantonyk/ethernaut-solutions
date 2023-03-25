@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-describe.only("GoodSamaritan", async function () {
+describe("GoodSamaritan", async function () {
 
   it("Should empty the GoodSamaritan wallet", async function () {
     const [owner, attacker] = await ethers.getSigners()
