@@ -1,4 +1,4 @@
-# Ethernaut Solutions
+# Ethernet Solutions
 
 [Leer en español](README.es.md)
 
@@ -30,15 +30,15 @@ npx hardhat test ./test/[levelName].ts
 - [Fallout](#level-two-fallout)
 - [Coin Flip](#level-three-coin-flip)
 
-## Level One: Fallback
+## Level 1: Fallback
 
 ### What to look for:
 
-Functions like receiving and `fallback` and `fallback` which can alter access control
+- Functions like receiving and `fallback` and `fallback` which can alter access control
 
-### Resolución:
+### Resolution:
 
-[Ver código](./test/Fallback.ts)
+[View code](./test/Fallback.ts)
 
 We observe that the contract has a fallback (receive) function that allows us to become the owner:
 
@@ -52,9 +52,27 @@ First, we need to execute `contribute` to send some ether without the transactio
 Next, send ether without call data to trigger the `receive` function and become the owner of the contract.
 Finally, execute the withdraw function to `withdraw` the contract balance and leave it at 0.
 
-## Level Two: Fallout
+## Level 2: Fallout
 
-Explanation of how to beat the level.
+### What to look for:
+
+- Spelling mistakes
+
+### Resolution:
+
+[View code](./test/Fallout.ts)
+
+In previous versions of Solidity, to specify the function that is executed when deploying a contract, one with the same name as the contract was used and it functioned as a constructor.
+In this case, if we try to view the value of either of the two variables, we quickly see that they are empty:
+
+```solidity
+    owner = msg.sender;
+    allocations[owner] = msg.value;
+```
+
+This is due to a spelling mistake in the constructor function, and its name does not match the Fallout contract vs. Fal1out.
+
+Simply executing Fal1out is enough to make us the owner of the contract and thus complete the level.
 
 ## Level Three: Coin Flip
 

@@ -30,7 +30,7 @@ npx hardhat test ./test/[levelName].ts
 - [Fallout](#level-two-fallout)
 - [Coin Flip](#level-three-coin-flip)
 
-## Nivel Uno: Fallback
+## Nivel 1: Fallback
 
 ### Que buscar:
 
@@ -52,10 +52,26 @@ Lo primero que debemos hacer es ejecutar la función `contribute` para poder env
 Luego, enviar ether sin call data para disparar la función `receive` y convertirnos en owner del contrato.
 Y, por último, ejecutar la función `withdraw` para retirar el balance del contrato y dejarlo en 0.
 
-## Level Two: Fallout
+## Nivel 2: Fallout
 
-Explanation of how to beat the level.
+### Que buscar:
+
+- Errores de ortografía.
+
+### Resolución:
+
+[Ver código](./test/Fallout.ts)
+
+En versiones anteriores de Solidity, para especificar la función que se ejecuta al momento de desplegar un contrato, se utilizaba una con el mismo nombre que el del contrato y funcionaba como constructor.
+En este caso, si intentamos ver el valor de alguna de las dos variables, vemos rapidamente que estan vacias:
+
+```solidity
+    owner = msg.sender;
+    allocations[owner] = msg.value;
+```
+
+Esto se debe a que la funcion constructora tiene un error de ortografia y su nombre no coincide con el contrato `Fallout` vs `Fal1out`.
+
+Basta con ejecutar `Fal1out` para convertirnos en el owner del contrato y asi completar el nivel.
 
 ## Level Three: Coin Flip
-
-Explanation of how to beat the level.
