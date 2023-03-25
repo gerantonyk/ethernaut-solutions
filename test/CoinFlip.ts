@@ -1,9 +1,9 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-describe("Fallout", async function () {
+describe("CoinFlip", async function () {
 
-  it("Should claim ownership ", async function () {
+  it("Should win 10 in a row", async function () {
     //+setup
     const [deployer, attacker] = await ethers.getSigners()
     const CoinFlip = await ethers.getContractFactory("CoinFlip");

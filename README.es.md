@@ -26,9 +26,10 @@ npx hardhat test ./test/[levelName].ts
 
 # Niveles
 
-- [Fallback](#level-one-fallback)
-- [Fallout](#level-two-fallout)
-- [Coin Flip](#level-three-coin-flip)
+- [Fallback](#nivel-1-fallback)
+- [Fallout](#nivel-2-fallout)
+- [Coin Flip](#nivel-3-coin-flip)
+- [Telephone](#nivel-4-telephone)
 
 ## Nivel 1: Fallback
 
@@ -87,3 +88,23 @@ Basta con ejecutar `Fal1out` para convertirnos en el owner del contrato y asi co
 Nota: Después de desarrollar esta solución, encontré otras que consisten en copiar la lógica para predecir el resultado. Esta última es más eficiente, ya que requiere menos transacciones. A continuación, se encuentra la primera solución que se me ocurrió, aunque es menos eficiente.
 
 En este caso, al ver que la función `flip` devuelve un booleano con el resultado (`true` si acertamos, `false` si no), podemos simplemente crear un contrato atacante que llame a la función en cuestión y que revierta en caso de que nos equivoquemos al adivinar el resultado. Con esto, garantizamos que solo se confirmen transacciones en las que acertamos. Luego de varios intentos, obtenemos 10 victorias consecutivas.
+
+## Level 4: Telephone
+
+### Qué buscar:
+
+- tx.origin: siempre hace referencia a la EOA (external owned account) que originó la transacción.
+
+### Resolución:
+
+[Ver código](./test/Telephone.ts)
+
+Vemos que la única función disponible es `changeOwner` y que tiene la siguiente condición:
+
+```solidity
+    if (tx.origin != msg.sender) {
+      owner = _owner;
+    }
+```
+
+Para sortear esto, basta con crear un contrato que actúe como intermediario en la llamada de `changeOwner`.De esta manera, nuestro `tx.origin` será la EOA y el `msg.sender` será el contrato intermediario. Esto permitirá cambiar el `owner` y resolver el nivel.
