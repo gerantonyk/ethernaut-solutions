@@ -31,6 +31,8 @@ npx hardhat test ./test/[levelName].ts
 - [Coin Flip](#level-3-coin-flip)
 - [Telephone](#level-4-telephone)
 - [Token](#level-5-token)
+- [Delegation](#level-6-delegation)
+- [Force](#level-7-force)
 
 ## Level 1: Fallback
 
@@ -128,3 +130,25 @@ In the `transfer` function, we see two uncontrolled operations that can cause un
 ```
 
 We just need to invoke the `transfer` function by sending 21 tokens (1 more than the balance). In both cases, an underflow will occur, resulting in 2^256-1 in the `require` statement and in the balance assignment. When we check the balance again, we see the aforementioned number as the balance, and we complete the level.
+
+## Level 6: Delegation
+
+### What to look for:
+
+- When using `delegatecall`, we call a function of another contract but using the context of the current contract. As a result, the state variables of the current contract are the ones that will be modified, not the ones from the contract called with `delegatecall`.
+
+### Resolution:
+
+[View code](./test/Delegation.ts)
+
+To complete this level, simply call the `pwn` function in the `Delegation` contract using the ABI of the `Delegate` contract, or by sending a transaction with `Delegation` as the destination and the calldata containing the first 4 bytes of the hash of the `pwn` function signature. This will execute the `pwn` function on the state variables of `Delegation`, thus obtaining ownership.
+
+# Level 7: Force
+
+### What to look for:
+
+-
+
+### Resolution:
+
+[Ver código](./test/Force.ts)

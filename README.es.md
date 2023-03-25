@@ -31,6 +31,8 @@ npx hardhat test ./test/[levelName].ts
 - [Coin Flip](#nivel-3-coin-flip)
 - [Telephone](#nivel-4-telephone)
 - [Token](#nivel-5-token)
+- [Delegation](#nivel-6-delegation)
+- [Force](#nivel-7-force)
 
 ## Nivel 1: Fallback
 
@@ -128,3 +130,39 @@ En la funcion `transfer` vemos dos operaciones no controladas que pueden produci
 ```
 
 Nos basta con invocar la funcion `transfer`enviando 21 tokens (1 más que el balance). En ambos casos, se va a producir underflow dando como resultado 2^256-1 en el `require` y en la asignacion del balance. Cuando chequeamos nuevamente vemos el numero antes mencionado como balance y completamos el nivel.
+
+# Nivel 6: Delegation
+
+### Qué buscar:
+
+- Cuando usamos `delegatecall`, llamamos a la función de un contrato pero usando el contexto del contrato actual. Por lo tanto, las variables de estado del contrato actual son las que se verán modificadas y no las del contrato llamado con `delegatecall`.
+
+### Resolución:
+
+[Ver código](./test/Delegation.ts)
+
+Para completar este nivel, basta con llamar a la función `pwn` en el contrato `Delegation` utilizando el ABI del contrato `Delegate`, o enviando una transacción con `Delegation` como destino y la calldata que contenga los primeros 4 bytes del hash de la firma de la función `pwn`. Con esto, lograremos ejecutar `pwn` sobre las variables de estado de `Delegation`, obteniendo así la propiedad (ownership).
+
+# Nivel 7: Force
+
+### Qué buscar:
+
+-
+
+### Resolución:
+
+[Ver código](./test/Force.ts)
+
+Para
+
+# Nivel 8:
+
+### Qué buscar:
+
+-
+
+### Resolución:
+
+[Ver código](./test/.ts)
+
+Para
