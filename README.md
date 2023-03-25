@@ -30,6 +30,7 @@ npx hardhat test ./test/[levelName].ts
 - [Fallout](#level-2-fallout)
 - [Coin Flip](#level-3-coin-flip)
 - [Telephone](#level-4-telephone)
+- [Token](#level-5-token)
 
 ## Level 1: Fallback
 
@@ -108,3 +109,22 @@ We see that the only available function is `changeOwner` and it has the followin
 ```
 
 To bypass this, we just need to create a contract that acts as an intermediary in the call to `changeOwner`. In this way, our `tx.origin` will be the EOA and the `msg.sender` will be the intermediary contract. This will allow changing the `owner` and solving the level.
+
+## Level 5: Token
+
+### What to look for:
+
+- Uncontrolled arithmetic operations before Solidity version 0.8.0 can cause under/overflows. The correct practice is to use the SafeMath library when we want to prevent this from happening.
+
+### Resolution:
+
+[View code](./test/Token.ts)
+
+In the `transfer` function, we see two uncontrolled operations that can cause underflows:
+
+```solidity
+    require(balances[msg.sender] - _value >= 0);
+    balances[msg.sender] -= _value;
+```
+
+We just need to invoke the `transfer` function by sending 21 tokens (1 more than the balance). In both cases, an underflow will occur, resulting in 2^256-1 in the `require` statement and in the balance assignment. When we check the balance again, we see the aforementioned number as the balance, and we complete the level.

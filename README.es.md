@@ -30,6 +30,7 @@ npx hardhat test ./test/[levelName].ts
 - [Fallout](#nivel-2-fallout)
 - [Coin Flip](#nivel-3-coin-flip)
 - [Telephone](#nivel-4-telephone)
+- [Token](#nivel-5-token)
 
 ## Nivel 1: Fallback
 
@@ -108,3 +109,22 @@ Vemos que la única función disponible es `changeOwner` y que tiene la siguient
 ```
 
 Para sortear esto, basta con crear un contrato que actúe como intermediario en la llamada de `changeOwner`.De esta manera, nuestro `tx.origin` será la EOA y el `msg.sender` será el contrato intermediario. Esto permitirá cambiar el `owner` y resolver el nivel.
+
+# Level 5: Token
+
+### Qué buscar:
+
+- Operaciones aritmeticas no controladas previo a la version de 0.8.0 pueden provocar under/overflows. La práctica correcta es usar la libreria SafeMath cuando queremos evitar que esto ocurra
+
+### Resolución:
+
+[Ver código](./test/Token.ts)
+
+En la funcion `transfer` vemos dos operaciones no controladas que pueden producir underflows:
+
+```solidity
+    require(balances[msg.sender] - _value >= 0);
+    balances[msg.sender] -= _value;
+```
+
+Nos basta con invocar la funcion `transfer`enviando 21 tokens (1 más que el balance). En ambos casos, se va a producir underflow dando como resultado 2^256-1 en el `require` y en la asignacion del balance. Cuando chequeamos nuevamente vemos el numero antes mencionado como balance y completamos el nivel.
