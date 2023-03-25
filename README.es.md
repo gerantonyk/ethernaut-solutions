@@ -32,7 +32,7 @@ npx hardhat test ./test/[levelName].ts
 
 ## Nivel 1: Fallback
 
-### Que buscar:
+### Qué buscar:
 
 - Funciones como `receive` y `fallback` que puedan alterar el control de acceso
 
@@ -54,7 +54,7 @@ Y, por último, ejecutar la función `withdraw` para retirar el balance del cont
 
 ## Nivel 2: Fallout
 
-### Que buscar:
+### Qué buscar:
 
 - Errores de ortografía.
 
@@ -74,4 +74,16 @@ Esto se debe a que la funcion constructora tiene un error de ortografia y su nom
 
 Basta con ejecutar `Fal1out` para convertirnos en el owner del contrato y asi completar el nivel.
 
-## Level Three: Coin Flip
+## Level 3: Coin Flip
+
+### Qué buscar:
+
+- Lógica pública que nos muestre cómo funciona el contrato y que tenga un return que nos permita manipularlo (en este caso, la función principal devuelve un bool que nos permite revertir la transacción si no nos gusta el resultado).
+
+### Resolución:
+
+[Ver código](./test/CoinFlip.ts)
+
+Nota: Después de desarrollar esta solución, encontré otras que consisten en copiar la lógica para predecir el resultado. Esta última es más eficiente, ya que requiere menos transacciones. A continuación, se encuentra la primera solución que se me ocurrió, aunque es menos eficiente.
+
+En este caso, al ver que la función `flip` devuelve un booleano con el resultado (`true` si acertamos, `false` si no), podemos simplemente crear un contrato atacante que llame a la función en cuestión y que revierta en caso de que nos equivoquemos al adivinar el resultado. Con esto, garantizamos que solo se confirmen transacciones en las que acertamos. Luego de varios intentos, obtenemos 10 victorias consecutivas.

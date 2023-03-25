@@ -74,6 +74,16 @@ This is due to a spelling mistake in the constructor function, and its name does
 
 Simply executing Fal1out is enough to make us the owner of the contract and thus complete the level.
 
-## Level Three: Coin Flip
+## Level 3: Coin Flip
 
-Explanation of how to beat the level.
+### What to look for:
+
+Public logic that shows us how the contract works and has a return that allows us to manipulate it (in this case, the main function returns a bool that lets us revert the transaction if we don't like the outcome).
+
+### Resolution:
+
+[View code](./test/CoinFlip.ts)
+
+Note: After developing this solution, I found others that involve copying the logic to predict the outcome. The latter is more efficient, as it requires fewer transactions. Below is the first solution I came up with, although it is less efficient.
+
+In this case, seeing that the `flip` function returns a boolean with the result (`true` if we're right, `false` if not), we can simply create an attacker contract that calls the function in question and reverts if we don't guess the right outcome. With this, we ensure that only transactions in which we are right are confirmed. After several attempts, we achieve 10 consecutive wins.

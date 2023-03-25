@@ -14,7 +14,6 @@ describe("Fallout", async function () {
     //1.Call Fal1out function to claim ownership
     await fallout.connect(attacker).Fal1out()
 
-
     expect(await fallout.owner()).to.eq(attacker.address)
 
   });
