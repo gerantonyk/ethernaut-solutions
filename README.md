@@ -33,6 +33,7 @@ npx hardhat test ./test/[levelName].ts
 - [Token](#level-5-token)
 - [Delegation](#level-6-delegation)
 - [Force](#level-7-force)
+- [Vault](#level-8-vault)
 
 ## Level 1: Fallback
 
@@ -144,6 +145,18 @@ We just need to invoke the `transfer` function by sending 21 tokens (1 more than
 To complete this level, simply call the `pwn` function in the `Delegation` contract using the ABI of the `Delegate` contract, or by sending a transaction with `Delegation` as the destination and the calldata containing the first 4 bytes of the hash of the `pwn` function signature. This will execute the `pwn` function on the state variables of `Delegation`, thus obtaining ownership.
 
 # Level 7: Force
+
+### What to look for:
+
+- In order for a smart contract to receive ether without having to send it by invoking a particular payable function, it must implement the `fallback` or `receive` functions.
+
+### Resolution:
+
+[Ver código](./test/Force.ts)
+
+Since the contract does not have any of the previously mentioned fallback functions, the only alternative we have to force the transfer is to create an attacker contract with a function that receives ether and executes the selfdestruct command, passing the Force contract's address as a parameter. After executing this function, we can verify the Force contract and see that it has the balance we sent to the attacker contract.
+
+# Level 8: Vault
 
 ### What to look for:
 

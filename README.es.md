@@ -33,6 +33,7 @@ npx hardhat test ./test/[levelName].ts
 - [Token](#nivel-5-token)
 - [Delegation](#nivel-6-delegation)
 - [Force](#nivel-7-force)
+- [Vault](#nivel-8-vault)
 
 ## Nivel 1: Fallback
 
@@ -147,15 +148,15 @@ Para completar este nivel, basta con llamar a la función `pwn` en el contrato `
 
 ### Qué buscar:
 
--
+- Para que un smart contract pueda recibir ether sin necesidad de enviarlo invocando una funcion payable particular, debe implementar las funciones `fallback` o `receive`.
 
 ### Resolución:
 
 [Ver código](./test/Force.ts)
 
-Para
+Como el contrato no tiene ninguna de las funciones fallback mencionadas anteriormente, la única alternativa que tenemos para forzar el envío es crear un contrato atacante que tenga una función que reciba ether y ejecute el comando `selfdestruct`, pasando como parámetro la dirección del contrato Force. Luego de ejecutar dicha función, verificamos el contrato Force y observamos que tendrá el saldo que enviamos al contrato atacante.
 
-# Nivel 8:
+# Nivel 8: Vault
 
 ### Qué buscar:
 
