@@ -34,6 +34,7 @@ npx hardhat test ./test/[levelName].ts
 - [Delegation](#level-6-delegation)
 - [Force](#level-7-force)
 - [Vault](#level-8-vault)
+- [King](#level-9-king)
 
 ## Level 1: Fallback
 
@@ -160,8 +161,22 @@ Since the contract does not have any of the previously mentioned fallback functi
 
 ### What to look for:
 
+- All state variables of a contract can be read regardless of whether they are defined as `public` or `private`, due to the public nature of the information stored on the blockchain.
+
+### Resolution:
+
+[Ver código](./test/Vault.ts)
+
+Note: The exercise was initially solved on the Ethernaut website, so when I set up this repository, I directly placed the correct password in the setup. Regardless, the solution works no matter what password is chosen.
+
+The `password` variable is defined as `private`, which means an automatic getter function is not generated to read its value. Given this situation, we must resort to reading the contract storage "manually." For this, we need to know how the information is stored. We won't go into detail here, but the EVM stores data in 32-byte portions with some specific rules. In this case, it occupies position 0x0 for the first variable and position 0x1 for the variable of interest, `password`. We use `getStorageAt` to obtain the value and then use it as a parameter when invoking the `unlock` function to complete the level.
+
+# Level 9: King
+
+### What to look for:
+
 -
 
 ### Resolution:
 
-[Ver código](./test/Force.ts)
+[Ver código](./test/King.ts)
