@@ -37,7 +37,8 @@ npx hardhat test ./test/[levelName].ts
 - [Force](#level-7-force)
 - [Vault](#level-8-vault)
 - [King](#level-9-king)
-- [Reentrance](#level-9-reentrance)
+- [Reentrance](#level-10-reentrance)
+- [Elevator](#level-11-elevator)
 
 ## Level 1: Fallback
 
@@ -156,7 +157,7 @@ To complete this level, simply call the `pwn` function in the `Delegation` contr
 
 ### Resolution:
 
-[Ver código](./test/Force.ts)
+[View code](./test/Force.ts)
 
 Since the contract does not have any of the previously mentioned fallback functions, the only alternative we have to force the transfer is to create an attacker contract with a function that receives ether and executes the selfdestruct command, passing the Force contract's address as a parameter. After executing this function, we can verify the Force contract and see that it has the balance we sent to the attacker contract.
 
@@ -168,7 +169,7 @@ Since the contract does not have any of the previously mentioned fallback functi
 
 ### Resolution:
 
-[Ver código](./test/Vault.ts)
+[View code](./test/Vault.ts)
 
 Note: The exercise was initially solved on the Ethernaut website, so when I set up this repository, I directly placed the correct password in the setup. Regardless, the solution works no matter what password is chosen.
 
@@ -182,7 +183,7 @@ The `password` variable is defined as `private`, which means an automatic getter
 
 ### Resolution:
 
-[Ver código](./test/King.ts)
+[View code](./test/King.ts)
 
 Considering that to become the `king`, we need to send ether to the contract and prevent the owner from reclaiming the `king` status, we will create an attacking contract with a function that allows us to resend ether to the King contract and a `receive` function that allows us to revert the transaction in case it receives ether without a specific function being invoked.
 We deploy the attacking contract, find out the value of the `prize` variable, and invoke the function in our attacking contract to resend that value in ether to the King contract. By doing this, we have made our attacking contract the `king`. Then, thanks to the `revert` we added to the `receive` function, when the owner of the contract tries to reclaim the `king` title, the transaction will be reverted due to the execution of the `transfer` method with the attacking contract as the destination.
@@ -191,6 +192,25 @@ We deploy the attacking contract, find out the value of the `prize` variable, an
 
 ### What to look for:
 
-- When a contract sends ether using the `transfer` method, if the recipient is another contract, it is susceptible to the logic executed in the `receive` or fallback function of the receiving contract. If for some reason the `transfer` method fails, the entire transaction is reverted.
+- Reentrancy attacks: When we have a function that sends ether to any address, we run the risk that the receiving contract implements malicious logic that allows it to re-invoke the original contract within the same transaction. We must ensure that state updates, such as balances, are updated before making the call.
+- The `call` method allows calling another contract with the particularity that the invocation can be reverted without reverting the entire transaction.
 
 ### Resolution:
+
+[View code](./test/Reentrance.ts)
+
+Note: The contract imports the SafeMath library but does not implement it in the operations, so we could opt for a solution that is agnostic to the contract balance, seeking to generate a negative overflow (underflow) with a reentry. With this, we would drastically increase our balance and could extract the entire funds from the contract.
+
+We observe that the Reentrance contract has a `withdraw` function that attempts to send ether to the `msg.sender`'s address. This, combined with the fact that the balances are updated after the call method invocation, allows us to exploit this vulnerability. We create an attacking contract with a function that executes `withdraw` and define the `receive` function, adding to it a call to the first function we defined. We obtain the balance of the Reentrance contract, send the same amount on behalf of our attacking contract using the `donate` function, and then call `withdraw` through our attacking contract. The function will execute the first time, Reentrance will send half of the balance, and thanks to the `receive` function, we will re-invoke `withdraw`, thus obtaining the other half.
+
+# Level 11: Elevator
+
+### What to look for:
+
+- Invocations to external contracts through interfaces, where the contract address can be chosen by any user. In these cases, malicious contracts can be used to obtain unexpected results.
+
+### Resolution:
+
+[View code](./test/Elevator.ts)
+
+We can see that the `goTo` function calls `Building.isLastFloor()` twice. We also observe that, although the Building contract interface is defined in the Elevator contract, the address is left open for anyone to implement the logic they want. The first invocation must return the value `false`, and the second one must return `true`. We define the `isLastFloor` function in the Building contract with the necessary logic to comply with the above and another one with the invocation to the `goTo` function. We invoke `goTo` through Building to ensure that our contract is the `msg.sender`. At the end of the transaction, the `<e` value is equal to `true`.

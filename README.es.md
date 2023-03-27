@@ -37,7 +37,8 @@ npx hardhat test ./test/[levelName].ts
 - [Force](#nivel-7-force)
 - [Vault](#nivel-8-vault)
 - [King](#nivel-9-king)
-- [Reentrance](#nivel-9-reentrance)
+- [Reentrance](#nivel-10-reentrance)
+- [Elevator](#nivel-11-elevator)
 
 ## Nivel 1: Fallback
 
@@ -200,10 +201,16 @@ Desplegamos dicho contrato atacante, averiguamos cuál es el valor de la variabl
 
 Nota: El contrato importa la librería SafeMath pero luego no la implementa en las operaciones, por lo que podríamos optar por una solución agnóstica del balance del contrato, buscando generar un desbordamiento negativo (underflow) con una reentrada. Con esto, aumentaríamos drásticamente nuestro balance y podríamos extraer la totalidad de fondos del contrato.
 
-Observamos que el contrato Reentrance tiene una función withdraw que intenta enviar ether a la dirección del msg.sender. Esto último, sumado a que los balances se actualizan después de la invocación del método call, nos permite explotar esta vulnerabilidad. Creamos un contrato atacante con una función que ejecute withdraw y definimos la función receive, agregando en ella una llamada a la primera función que definimos. Obtenemos el balance del contrato Reentrance, enviamos esa misma cantidad en nombre de nuestro contrato atacante con la función donate y luego llamamos a withdraw a través de nuestro contrato atacante. La función se ejecutará la primera vez, Reentrance enviará la mitad del balance y, gracias a la función receive, volveremos a invocar withdraw, obteniendo así la otra mitad.
+Observamos que el contrato Reentrance tiene una función `withdraw` que intenta enviar ether a la dirección del `msg.sender`. Esto último, sumado a que los balances se actualizan después de la invocación del método `call`, nos permite explotar esta vulnerabilidad. Creamos un contrato atacante con una función que ejecute `withdraw` y definimos la función `receive`, agregando en ella una llamada a la primera función que definimos. Obtenemos el balance del contrato Reentrance, enviamos esa misma cantidad en nombre de nuestro contrato atacante con la función `donate` y luego llamamos a `withdraw` a través de nuestro contrato atacante. La función se ejecutará la primera vez, Reentrance enviará la mitad del balance y, gracias a la función `receive`, volveremos a invocar `withdraw`, obteniendo así la otra mitad.
 
-# Nivel 11:
+# Nivel 11: Elevator
 
 ### Qué buscar:
 
+- Invocaciones a contratos externos mediante interfaces, donde la dirección del contrato puede ser elegida por cualquier usuario.. En estos casos se pueden utilizar contratos con código malicioso y así obtener resultados inesperados.
+
 ### Resolución:
+
+[Ver código](./test/Elevator.ts)
+
+Vemos que la función `goTo` llama dos veces a `Building.isLastFloor()`. También observamos que, si bien se en el contrato Elevator se define la interfaz del contrato Building, la dirección queda abierta para que cualquiera pueda implementar la lógica que desee. La primera invocación debe devolver el valor `false` y la segunda `true`. Definimos en el contrato Building la función `isLastFloor` con la lógica necesaria para cumplir con lo anterior y otra con la invocación a la función `goTo`. Invocamos a `goTo` a traves de Building para garantizarnos que nuestro contrato sea el `msg.sender`. Al finalizar la transacción el valor `top` es igual a `true`.
