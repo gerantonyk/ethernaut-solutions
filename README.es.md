@@ -1,5 +1,7 @@
 # Ethernaut Solutions
 
+[Hire Me](https://www.linkedin.com/in/germansuarezdev/)
+<br>
 [Read in English](README.md)
 
 Este proyecto contiene las soluciones y explicaciones para todos los niveles actuales del wargame de OpenZeppelin, Ethernaut.
@@ -35,6 +37,7 @@ npx hardhat test ./test/[levelName].ts
 - [Force](#nivel-7-force)
 - [Vault](#nivel-8-vault)
 - [King](#nivel-9-king)
+- [Reentrance](#nivel-9-reentrance)
 
 ## Nivel 1: Fallback
 
@@ -175,18 +178,32 @@ Vemos que la variable `password` está definida como `private`, lo que significa
 
 ### Qué buscar:
 
--
+- Cuando un contrato envía ether usando el método `transfer`, si el destinatario es otro contrato, es susceptible a la lógica que se ejecute en la función `receive` o `fallback` del receptor. Si por alguna razón el método `transfer` falla, toda la transacción es revertida.
 
 ### Resolución:
 
 [Ver código](./test/King.ts)
+
+Teniendo en cuenta que para convertirnos en `king`, lo que debemos hacer es enviar ether al contrato y que necesitamos prevenir que el propietario reclame el estatus de `king`, crearemos un contrato atacante con una función que nos permita reenviar ether al contrato King y una función `receive` que nos permita revertir la transacción en caso de que reciba ether sin que una función en particular sea invocada.
+Desplegamos dicho contrato atacante, averiguamos cuál es el valor de la variable `prize` e invocamos a la función en nuestro contrato atacante para reenviar dicho valor en ether al contrato `King`. Con esto ya hemos convertido nuestro contrato atacante en `king`. Luego, gracias al `revert` que agregamos en la función `receive`, cuando el propietario del contrato intente reclamar el título de `king`, la transacción será revertida debido a la ejecución del método `transfer` con destino al contrato atacante.
 
 # Nivel 10:
 
 ### Qué buscar:
 
--
+- Reentrancy attacks: Cuando tenemos una función que envía ether a una dirección cualquiera, corremos el riesgo de que el contrato receptor implemente lógica maliciosa que permita volver a invocar al contrato original en la misma transacción. Debemos verificar que las actualizaciones de estado, como saldos, se actualicen antes de realizar la llamada.
+- El método `call` permite la llamada a otro contrato con la particularidad de que la invocación puede revertir sin revertir la transacción.
 
 ### Resolución:
 
-[Ver código](./test/King.ts)
+[Ver código](./test/Reentrance.ts)
+
+Nota: El contrato importa la librería SafeMath pero luego no la implementa en las operaciones, por lo que podríamos optar por una solución agnóstica del balance del contrato, buscando generar un desbordamiento negativo (underflow) con una reentrada. Con esto, aumentaríamos drásticamente nuestro balance y podríamos extraer la totalidad de fondos del contrato.
+
+Observamos que el contrato Reentrance tiene una función withdraw que intenta enviar ether a la dirección del msg.sender. Esto último, sumado a que los balances se actualizan después de la invocación del método call, nos permite explotar esta vulnerabilidad. Creamos un contrato atacante con una función que ejecute withdraw y definimos la función receive, agregando en ella una llamada a la primera función que definimos. Obtenemos el balance del contrato Reentrance, enviamos esa misma cantidad en nombre de nuestro contrato atacante con la función donate y luego llamamos a withdraw a través de nuestro contrato atacante. La función se ejecutará la primera vez, Reentrance enviará la mitad del balance y, gracias a la función receive, volveremos a invocar withdraw, obteniendo así la otra mitad.
+
+# Nivel 11:
+
+### Qué buscar:
+
+### Resolución:

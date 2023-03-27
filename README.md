@@ -1,5 +1,7 @@
 # Ethernet Solutions
 
+[Hire Me](https://www.linkedin.com/in/germansuarezdev/)
+<br>
 [Leer en español](README.es.md)
 
 This project contains the solutions and explanations for all the current levels of OpenZeppelin's wargame, Ethernaut.
@@ -35,6 +37,7 @@ npx hardhat test ./test/[levelName].ts
 - [Force](#level-7-force)
 - [Vault](#level-8-vault)
 - [King](#level-9-king)
+- [Reentrance](#level-9-reentrance)
 
 ## Level 1: Fallback
 
@@ -175,8 +178,19 @@ The `password` variable is defined as `private`, which means an automatic getter
 
 ### What to look for:
 
--
+- When a contract sends ether using the `transfer` method, if the recipient is another contract, it is susceptible to the logic executed in the `receive` or fallback function of the receiving contract. If for some reason the `transfer` method fails, the entire transaction is reverted.
 
 ### Resolution:
 
 [Ver código](./test/King.ts)
+
+Considering that to become the `king`, we need to send ether to the contract and prevent the owner from reclaiming the `king` status, we will create an attacking contract with a function that allows us to resend ether to the King contract and a `receive` function that allows us to revert the transaction in case it receives ether without a specific function being invoked.
+We deploy the attacking contract, find out the value of the `prize` variable, and invoke the function in our attacking contract to resend that value in ether to the King contract. By doing this, we have made our attacking contract the `king`. Then, thanks to the `revert` we added to the `receive` function, when the owner of the contract tries to reclaim the `king` title, the transaction will be reverted due to the execution of the `transfer` method with the attacking contract as the destination.
+
+# Level 10: Reentrance
+
+### What to look for:
+
+- When a contract sends ether using the `transfer` method, if the recipient is another contract, it is susceptible to the logic executed in the `receive` or fallback function of the receiving contract. If for some reason the `transfer` method fails, the entire transaction is reverted.
+
+### Resolution:
