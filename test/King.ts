@@ -4,12 +4,12 @@ import { ethers } from "hardhat";
 describe("King", async function () {
 
   it("Should prevent the owner from reclaiming the king title.", async function () {
-    //+setup
+    //setup+
     const [deployer, attacker] = await ethers.getSigners()
     const King = await ethers.getContractFactory("King");
     const king = await King.deploy({ value: ethers.utils.parseEther("0.001") });
     await king.deployed();
-    //-setup
+    //setup-
 
 
 

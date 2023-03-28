@@ -5,14 +5,14 @@ const { parseEther } = ethers.utils
 describe("Reentrance", async function () {
 
   it("Should steal all the funds", async function () {
-    //+setup
+    //setup+
     const [deployer, attacker] = await ethers.getSigners()
     const Reentrance = await ethers.getContractFactory("Reentrance");
     const reentrance = await Reentrance.deploy();
     await reentrance.deployed();
 
     await deployer.sendTransaction({ to: reentrance.address, value: parseEther("0.001") })
-    //-setup
+    //setup-
 
 
     //1.Deploy the attacker

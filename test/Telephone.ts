@@ -4,12 +4,12 @@ import { ethers } from "hardhat";
 describe("Telephone", async function () {
 
   it("Should claim ownership", async function () {
-    //+setup
+    //setup+
     const [deployer, attacker] = await ethers.getSigners()
     const Telephone = await ethers.getContractFactory("Telephone");
     const telephone = await Telephone.deploy();
     await telephone.deployed();
-    //-setup
+    //setup-
 
     //1. Deploy TelephoneAttacker
     const TelephoneAttacker = await ethers.getContractFactory("TelephoneAttacker");

@@ -39,6 +39,8 @@ npx hardhat test ./test/[levelName].ts
 - [King](#nivel-9-king)
 - [Reentrance](#nivel-10-reentrance)
 - [Elevator](#nivel-11-elevator)
+- [Private](#nivel-12-private)
+- [GatekeeperOne](#nivel-13-gatekeeperone)
 
 ## Nivel 1: Fallback
 
@@ -214,3 +216,59 @@ Observamos que el contrato Reentrance tiene una función `withdraw` que intenta 
 [Ver código](./test/Elevator.ts)
 
 Vemos que la función `goTo` llama dos veces a `Building.isLastFloor()`. También observamos que, si bien se en el contrato Elevator se define la interfaz del contrato Building, la dirección queda abierta para que cualquiera pueda implementar la lógica que desee. La primera invocación debe devolver el valor `false` y la segunda `true`. Definimos en el contrato Building la función `isLastFloor` con la lógica necesaria para cumplir con lo anterior y otra con la invocación a la función `goTo`. Invocamos a `goTo` a traves de Building para garantizarnos que nuestro contrato sea el `msg.sender`. Al finalizar la transacción el valor `top` es igual a `true`.
+
+# Nivel 12: Private
+
+### Qué buscar:
+
+- Todas las variables de estado de un contrato pueden ser leídas sin importar si son definidas como `public` o `private`, debido a la naturaleza pública de la información que se almacena en la blockchain. Los arrays fijos se almacenan de forma consecutiva.
+
+### Resolución:
+
+[Ver código](./test/Private.ts)
+
+Para resolver este nivel, tenemos que hacer algo similar a lo que hicimos en el nivel Vault. Debemos utilizar `getStorageAt` para obtener el valor de una variable definida como privada. Necesitamos saber, nuevamente, cómo la EVM guarda los datos en el `storage`. En este caso particular, sabemos que la primera variable ocupa el slot 0x0, la segunda el 0x1, y las 3 siguientes comparten la posición 0x2. Como la última es un array fijo, cada uno de sus elementos se almacena secuencialmente. Como nos interesa `data[2]`, buscamos en la posición 0x5. Luego, tenemos que saber que el casting de `bytes16` sobre `bytes32` toma los primeros 16 bytes. Por lo tanto, llamamos a la función `unlock` pasando los primeros 16 bytes del valor obtenido con getStorageAt en la posición 0x05.
+
+# Nivel 12: Private
+
+### Qué buscar:
+
+- Cómo funciona el casting de `uint` de diferentes tamaños.
+
+### Resolución:
+
+[Ver código](./test/GatekeeperOne.ts)
+
+Encontramos tres modifiers que definen tres gates que debemos superar:
+
+Gate one:
+
+```solidity
+require(msg.sender != tx.origin);
+```
+
+Lo resolvemos utilizando un contrato atacante para que el `msg.sender` sea el address del contrato y nuestra eoa el `tx.origin`.
+
+Gate two:
+
+```solidity
+require(gasleft() % 8191 == 0);
+```
+
+La función `gasleft()` devuelve la cantidad de gas restante. Para superar este gate, debemos asegurarnos de que el gas restante sea un múltiplo de 8191. Para ello, utilizamos la fuerza bruta hasta encontrar el primer valor de gas que satisfaga la declaración `require`. Hay que tener en cuenta que, si luego queremos utilizar este valor para resolver el nivel en la página de Ethernaut, debemos asegurarnos de utilizar la misma versión del compilador con las mismas opciones.
+
+Gate three:
+
+Como mencionamos anteriormente, debemos saber cómo funciona el casting de `uint` y qué sucede cuando se realiza un casting a un tipo más pequeño que el valor que estamos usando. La respuesta es que, en el caso de que castemos un `uint32` a un `uint16`, perderemos los primeros 16 bits de izquierda a derecha. Sabiendo esto, necesitamos pasar un valor que satisfaga los tres `require`.
+
+```solidity
+require(uint32(uint64(_gateKey)) == uint16(uint64(_gateKey)))
+require(uint32(uint64(_gateKey)) != uint64(_gateKey))
+require(uint32(uint64(_gateKey)) == uint16(uint160(tx.origin)))
+```
+
+- Para el primero, necesitamos que los últimos 4 bytes de `_gateKey` sean iguales a los últimos 2 bytes.
+- Para el segundo, necesitamos que los últimos 4 bytes de `_gateKey` sean diferentes de los 8 bytes de `_gateKey`.
+- Y para el tercero, necesitamos que los últimos 4 bytes de `_gateKey` sean iguales a los últimos 2 bytes de `tx.origin`.
+
+Para lograr esto, utilizamos una máscara y la operación &. Una vez que hemos obtenido el valor correcto, podremos convertirnos en `entrant`.

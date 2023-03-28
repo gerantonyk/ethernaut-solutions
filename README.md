@@ -39,6 +39,8 @@ npx hardhat test ./test/[levelName].ts
 - [King](#level-9-king)
 - [Reentrance](#level-10-reentrance)
 - [Elevator](#level-11-elevator)
+- [Private](#level-12-private)
+- [GatekeeperOne](#level-13-gatekeeperone)
 
 ## Level 1: Fallback
 
@@ -214,3 +216,59 @@ We observe that the Reentrance contract has a `withdraw` function that attempts 
 [View code](./test/Elevator.ts)
 
 We can see that the `goTo` function calls `Building.isLastFloor()` twice. We also observe that, although the Building contract interface is defined in the Elevator contract, the address is left open for anyone to implement the logic they want. The first invocation must return the value `false`, and the second one must return `true`. We define the `isLastFloor` function in the Building contract with the necessary logic to comply with the above and another one with the invocation to the `goTo` function. We invoke `goTo` through Building to ensure that our contract is the `msg.sender`. At the end of the transaction, the `<e` value is equal to `true`.
+
+# Level 12: Private
+
+### What to look for:
+
+- All state variables of a contract can be read regardless of whether they are defined as `public` or `private`, due to the public nature of the information stored on the blockchain. The fixed arrays are stored sequentially.
+
+### Resolution:
+
+[View code](./test/Private.ts)
+
+To solve this level, we have to do something similar to what we did in the Vault level. We need to use `getStorageAt` to get the value of a variable defined as private. We need to know, again, how the EVM stores data in `storage`. In this particular case, we know that the first variable occupies slot 0x0, the second occupies 0x1, and the next 3 share position 0x2. Since the last one is a fixed array, each of its elements is stored sequentially. Since we're interested in `data[2]`, we look for it at position 0x5. Then, we need to know that casting `bytes16` on `bytes32` takes the first 16 bytes. Therefore, we call `unlock` function passing the first 16 bytes of the value obtained with `getStorageAt` at position 0x05.
+
+# Level 12: GatekeeperOne
+
+### What to look for:
+
+- How casting of `uint` of different sizes works.
+
+### Resolution:
+
+[View code](./test/GatekeeperOne.ts)
+
+We come across three modifiers that define three gates that we must overcome:
+
+Gate one:
+
+```solidity
+require(msg.sender != tx.origin);
+```
+
+We solve this by using an attacking contract so that `msg.sender` is the contract's address and our externally owned account (EOA) is the`tx.origin`.
+
+Gate two:
+
+```solidity
+require(gasleft() % 8191 == 0);
+```
+
+The `gasleft()` function returns the amount of gas left. To overcome this gate, we must make sure that the remaining gas is a multiple of 8191. For this, we will use brute force to find out the first gas value that satisfies the `require` statement. Keep in mind that if we want to use this value to solve the level on the Ethernaut page, we must make sure to use the same compiler version with the same options.
+
+Gate three:
+
+As we mentioned earlier, we need to know how the casting of `uint` works and what happens when we cast to a smaller type than the value we are using. The answer is that in the case of casting a `uint32` to a `uint16`, we lose the first 16 bits from left to right. Knowing this, we need to pass a value that satisfies all three require statements.
+
+```solidity
+require(uint32(uint64(_gateKey)) == uint16(uint64(_gateKey)))
+require(uint32(uint64(_gateKey)) != uint64(_gateKey))
+require(uint32(uint64(_gateKey)) == uint16(uint160(tx.origin)))
+```
+
+- For the first one, we need the last 4 bytes of `_gateKey` to be the same as the last 2 bytes.
+- For the second one, we need the last 4 bytes of `_gateKey` to be different from the 8 bytes of `_gateKey`.
+- And for the third one, we need the last 4 bytes of `_gateKey` to be the same as the last 2 bytes of tx.origin.
+
+To achieve this, we use a mask and the bitwise operation &. Once we have obtained the correct value, we will be able to become the `entrant`.

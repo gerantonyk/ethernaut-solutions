@@ -4,12 +4,12 @@ import { ethers } from "hardhat";
 describe("CoinFlip", async function () {
 
   it("Should win 10 in a row", async function () {
-    //+setup
+    //setup+
     const [deployer, attacker] = await ethers.getSigners()
     const CoinFlip = await ethers.getContractFactory("CoinFlip");
     const coinFlip = await CoinFlip.deploy();
     await coinFlip.deployed();
-    //-setup
+    //setup-
 
     //1. Deploy CoinFlipAttacker
     const CoinFlipAttacker = await ethers.getContractFactory("CoinFlipAttacker");

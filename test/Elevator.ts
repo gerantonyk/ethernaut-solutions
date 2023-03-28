@@ -4,12 +4,12 @@ import { ethers } from "hardhat";
 describe("Evelevator", async function () {
 
   it("Should reach the top", async function () {
-    //+setup
+    //setup+
     const [deployer, attacker] = await ethers.getSigners()
     const Elevator = await ethers.getContractFactory("Elevator");
     const elevator = await Elevator.deploy();
     await elevator.deployed();
-    //-setup
+    //setup-
 
     //1.Deploy our custom Building
     const Building = await ethers.getContractFactory("Building");

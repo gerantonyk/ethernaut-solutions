@@ -5,12 +5,12 @@ const { parseEther } = ethers.utils
 describe("Fallback", async function () {
 
   it("Should claim ownership and steal the balance", async function () {
-    //+setup
+    //setup+
     const [deployer, attacker] = await ethers.getSigners()
     const Fallback = await ethers.getContractFactory("Fallback");
     const fallback = await Fallback.deploy();
     await fallback.deployed();
-    //-setup
+    //setup-
 
     //1.Contribute to add some balance in balance[msg.sender]
     await fallback.connect(attacker).contribute({ value: parseEther("0.0001") })

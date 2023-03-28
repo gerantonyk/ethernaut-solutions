@@ -4,12 +4,12 @@ import { ethers } from "hardhat";
 describe("Vault", async function () {
 
   it("Should unlock the vault", async function () {
-    //+setup
+    //setup+
     const [deployer, attacker] = await ethers.getSigners()
     const Vault = await ethers.getContractFactory("Vault");
     const vault = await Vault.deploy(ethers.utils.toUtf8Bytes("A very strong secret password :)"));
     await vault.deployed();
-    //-setup
+    //setup-
 
 
     //1.Call getStorageAt to retrieve the password value at position 1

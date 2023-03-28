@@ -4,12 +4,12 @@ import { ethers } from "hardhat";
 describe("Force", async function () {
 
   it("Should increase the balance", async function () {
-    //+setup
+    //setup+
     const [deployer, attacker] = await ethers.getSigners()
     const Force = await ethers.getContractFactory("Force");
     const force = await Force.deploy();
     await force.deployed();
-    //-setup
+    //setup-
 
     //1. Deploy ForceAttacker
     const ForceAttacker = await ethers.getContractFactory("ForceAttacker");
