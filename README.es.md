@@ -41,7 +41,8 @@ npx hardhat test ./test/[levelName].ts
 - [Elevator](#nivel-11-elevator)
 - [Private](#nivel-12-private)
 - [GatekeeperOne](#nivel-13-gatekeeperone)
-- [GatekeeperTwo](#nivel-13-gatekeepertwo)
+- [GatekeeperTwo](#nivel-14-gatekeepertwo)
+- [NaughtCoin](#nivel-15-naughtcoin)
 
 ## Nivel 1: Fallback
 
@@ -298,12 +299,20 @@ Lo que debemos hacer es buscar el complemento a nivel de bits del hash de la dir
 
 Con sólo desplegar el contrato con la lógica en el `constructor` lograremos convertirnos en `entrant`
 
-# Nivel 15: GatekeeperTwo
+# Nivel 15: NaughtCoin
 
 ### Qué buscar:
 
-- Inline assembly code: Son operaciones de bajo nivel y pueden conducir a resultados inesperados
+- ERC20: En algunos casos el estándar se utiliza incorrectamente dejando lugar a vulnerabilidades.
 
 ### Resolución:
 
-[Ver código](./test/GatekeeperTwo.ts)
+[Ver código](./test/NaughtCoin.ts)
+
+Nota: Se puede resolver este nivel sin necesidad de usar un contrato atacante, simplemente usando dos EOA en su lugar y aprobando a la segunda desde la cuenta player
+
+Lo que debemos hacer es ejecutar una función estándar de ERC20, `approve`, y pasar como parámetros la dirección del contrato atacante y el total de balance en tokens. De esta manera, le estamos diciendo al contrato NaughtyCoin que estamos aprobando a un tercero para que mueva tokens por nosotros. Luego, desde el contrato atacante, ejecutamos la función `transferFrom` para mover la totalidad de los tokens al contrato atacante y así cumplir con el requisito para pasar el nivel.
+
+# Nivel 16: GatekeeperTwo
+
+### Qué buscar:

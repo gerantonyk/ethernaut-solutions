@@ -2,12 +2,6 @@
 
 pragma solidity >=0.8.2 <0.9.0;
 
-/**
- * @title Storage
- * @dev Store & retrieve value in a variable
- * @custom:dev-run-script ./scripts/deploy_with_ethers.ts
- */
-
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract NaughtCoinAttacker {
@@ -17,7 +11,7 @@ contract NaughtCoinAttacker {
         naughtCoinAttacker = IERC20(_naughtCoinAttacker);
     }
 
-    function attack() external {
+    function callTransferFrom() external {
         naughtCoinAttacker.transferFrom(
             msg.sender,
             address(this),

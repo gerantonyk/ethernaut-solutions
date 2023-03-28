@@ -41,7 +41,8 @@ npx hardhat test ./test/[levelName].ts
 - [Elevator](#level-11-elevator)
 - [Private](#level-12-private)
 - [GatekeeperOne](#level-13-gatekeeperone)
-- [GatekeeperTwo](#level-13-gatekeepertwo)
+- [GatekeeperTwo](#level-14-gatekeepertwo)
+- [NaughtCoin](#level-15-naughtcoin)
 
 ## Level 1: Fallback
 
@@ -298,7 +299,21 @@ What we need to do is to search for the bitwise complement of the hash of the at
 
 By simply deploying the contract with the logic in the `constructor`, we will be able to become an `entrant`.
 
-# Level 15: GatekeeperTwo
+# Level 15: NaughtCoin
+
+### What to look for:
+
+- ERC20: In some cases, the standard is incorrectly used, leaving room for vulnerabilities.
+
+### Resolution:
+
+[View code](./test/NaughtCoin.ts)
+
+Note: This level can be solved without using an attacking contract, simply by using two EOA instead and approving the second one from the player's account.
+
+What we need to do is execute a standard ERC20 function, `approve`, and pass as parameters the address of the attacking contract and the total balance in tokens. This way, we are telling the NaughtyCoin contract that we are approving a third party to move tokens on our behalf. Then, from the attacking contract, we execute the `transferFrom` function to move all the tokens to the attacking contract and thus fulfill the requirement to pass the level.
+
+# Level 16: NaughtCoin
 
 ### What to look for:
 
@@ -306,4 +321,4 @@ By simply deploying the contract with the logic in the `constructor`, we will be
 
 ### Resolution:
 
-[View code](./test/GatekeeperTwo.ts)
+[View code](./test/NaughtCoin.ts)
