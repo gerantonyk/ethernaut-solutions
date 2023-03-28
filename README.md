@@ -41,6 +41,7 @@ npx hardhat test ./test/[levelName].ts
 - [Elevator](#level-11-elevator)
 - [Private](#level-12-private)
 - [GatekeeperOne](#level-13-gatekeeperone)
+- [GatekeeperTwo](#level-13-gatekeepertwo)
 
 ## Level 1: Fallback
 
@@ -229,7 +230,7 @@ We can see that the `goTo` function calls `Building.isLastFloor()` twice. We als
 
 To solve this level, we have to do something similar to what we did in the Vault level. We need to use `getStorageAt` to get the value of a variable defined as private. We need to know, again, how the EVM stores data in `storage`. In this particular case, we know that the first variable occupies slot 0x0, the second occupies 0x1, and the next 3 share position 0x2. Since the last one is a fixed array, each of its elements is stored sequentially. Since we're interested in `data[2]`, we look for it at position 0x5. Then, we need to know that casting `bytes16` on `bytes32` takes the first 16 bytes. Therefore, we call `unlock` function passing the first 16 bytes of the value obtained with `getStorageAt` at position 0x05.
 
-# Level 12: GatekeeperOne
+# Level 13: GatekeeperOne
 
 ### What to look for:
 
@@ -272,3 +273,37 @@ require(uint32(uint64(_gateKey)) == uint16(uint160(tx.origin)))
 - And for the third one, we need the last 4 bytes of `_gateKey` to be the same as the last 2 bytes of tx.origin.
 
 To achieve this, we use a mask and the bitwise operation &. Once we have obtained the correct value, we will be able to become the `entrant`.
+
+# Level 14: GatekeeperTwo
+
+### What to look for:
+
+- Inline assembly code: Low-level operations that can lead to unexpected results
+
+### Resolution:
+
+[View code](./test/GatekeeperTwo.ts)
+
+Gate one:
+
+It is solved in the same way as gate one in GatekeeperOne.
+
+Gate two:
+
+The assembly code portion stores the size of the contract's bytecode in bytes in the variable x. The only way we can execute it and get 0 is in the `constructor`, since the bytecode has not yet been copied.
+
+Gate Three:
+
+What we need to do is to search for the bitwise complement of the hash of the attacker contract address (which will match msg.sender). To do this, we use the `~` operator. Then, by performing the `XOR` operation, we will get a number whose bits will have a value of 1. Since this number will have a length of 8 bytes, when we convert it to `uint64`, we will get the maximum possible value for a `uint64`.
+
+By simply deploying the contract with the logic in the `constructor`, we will be able to become an `entrant`.
+
+# Level 15: GatekeeperTwo
+
+### What to look for:
+
+-
+
+### Resolution:
+
+[View code](./test/GatekeeperTwo.ts)

@@ -41,6 +41,7 @@ npx hardhat test ./test/[levelName].ts
 - [Elevator](#nivel-11-elevator)
 - [Private](#nivel-12-private)
 - [GatekeeperOne](#nivel-13-gatekeeperone)
+- [GatekeeperTwo](#nivel-13-gatekeepertwo)
 
 ## Nivel 1: Fallback
 
@@ -229,7 +230,7 @@ Vemos que la función `goTo` llama dos veces a `Building.isLastFloor()`. Tambié
 
 Para resolver este nivel, tenemos que hacer algo similar a lo que hicimos en el nivel Vault. Debemos utilizar `getStorageAt` para obtener el valor de una variable definida como privada. Necesitamos saber, nuevamente, cómo la EVM guarda los datos en el `storage`. En este caso particular, sabemos que la primera variable ocupa el slot 0x0, la segunda el 0x1, y las 3 siguientes comparten la posición 0x2. Como la última es un array fijo, cada uno de sus elementos se almacena secuencialmente. Como nos interesa `data[2]`, buscamos en la posición 0x5. Luego, tenemos que saber que el casting de `bytes16` sobre `bytes32` toma los primeros 16 bytes. Por lo tanto, llamamos a la función `unlock` pasando los primeros 16 bytes del valor obtenido con getStorageAt en la posición 0x05.
 
-# Nivel 12: Private
+# Nivel 13: GatekeeperOne
 
 ### Qué buscar:
 
@@ -272,3 +273,37 @@ require(uint32(uint64(_gateKey)) == uint16(uint160(tx.origin)))
 - Y para el tercero, necesitamos que los últimos 4 bytes de `_gateKey` sean iguales a los últimos 2 bytes de `tx.origin`.
 
 Para lograr esto, utilizamos una máscara y la operación &. Una vez que hemos obtenido el valor correcto, podremos convertirnos en `entrant`.
+
+# Nivel 14: GatekeeperTwo
+
+### Qué buscar:
+
+- Inline assembly code: Son operaciones de bajo nivel y pueden conducir a resultados inesperados
+
+### Resolución:
+
+[Ver código](./test/GatekeeperTwo.ts)
+
+Gate one:
+
+Se resuelve de la misma manera que el gate one en el GatekeeperOne.
+
+Gate two:
+
+La porcion de código de assembly está conlocando en la variable x el tamaño del código del contrato en bytes. La única manera que tenemos de ejecutarlo y que sea 0 es en el `contructor`, dado que el bytecode aún no ha sido copiado.
+
+Gate Three:
+
+Lo que debemos hacer es buscar el complemento a nivel de bits del hash de la dirección del contrato atacante (que coincidirá con el msg.sender). Para esto utilizamos el operador `~`. Luego, al realizar la operación `XOR`, obtendremos un número cuyos bits tendran como valor 1. Dado que este número tendrá una longitud de 8 bytes, cuando lo convirtamos a `uint64`, obtendremos el valor máximo posible para un `uint64`.
+
+Con sólo desplegar el contrato con la lógica en el `constructor` lograremos convertirnos en `entrant`
+
+# Nivel 15: GatekeeperTwo
+
+### Qué buscar:
+
+- Inline assembly code: Son operaciones de bajo nivel y pueden conducir a resultados inesperados
+
+### Resolución:
+
+[Ver código](./test/GatekeeperTwo.ts)
