@@ -43,6 +43,7 @@ npx hardhat test ./test/[levelName].ts
 - [GatekeeperOne](#nivel-13-gatekeeperone)
 - [GatekeeperTwo](#nivel-14-gatekeepertwo)
 - [NaughtCoin](#nivel-15-naughtcoin)
+- [Preservation](#nivel-16-preservarion)
 
 ## Nivel 1: Fallback
 
@@ -313,6 +314,18 @@ Nota: Se puede resolver este nivel sin necesidad de usar un contrato atacante, s
 
 Lo que debemos hacer es ejecutar una función estándar de ERC20, `approve`, y pasar como parámetros la dirección del contrato atacante y el total de balance en tokens. De esta manera, le estamos diciendo al contrato NaughtyCoin que estamos aprobando a un tercero para que mueva tokens por nosotros. Luego, desde el contrato atacante, ejecutamos la función `transferFrom` para mover la totalidad de los tokens al contrato atacante y así cumplir con el requisito para pasar el nivel.
 
-# Nivel 16: GatekeeperTwo
+# Nivel 16: Preservation
 
 ### Qué buscar:
+
+- Cuando usamos `delegatecall`, llamamos a la función de un contrato pero usando el contexto del contrato actual. Por lo tanto, las variables de estado del contrato actual son las que se verán modificadas y no las del contrato llamado con `delegatecall`.
+- Errores en las definiciones en la forma en la que se definen las variables de estado cuando se realiza `delegatecall`
+
+### Resolución:
+
+[Ver código](./test/Preservation.ts)
+
+Lo que debemos hacer aquí es entender cómo funcionan `delegatecall` y el almacenamiento. Cuando utilizamos `delegatecall`, llamamos a una función de otro contrato pero usando el contexto del contrato actual. Las variables se emparejan por posición de memoria, por lo que, aunque en el contrato LibraryContract estemos modificando la variable `storedTime`, en realidad estamos haciendo referencia a la posición de memoria número 0.
+Por lo tanto, si invocamos la función `setFirstTime` con la dirección de nuestro contrato atacante como argumento, estaremos modificando la variable `timeZoneLibrary`.
+Podemos aprovechar esto para definir un contrato atacante que tenga la misma definición de almacenamiento y modifique la variable `owner`.
+Luego, volvemos a invocar la misma función, pero esta vez pasando la dirección de nuestra billetera como parámetro para obtener la propiedad del contrato.

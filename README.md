@@ -43,6 +43,7 @@ npx hardhat test ./test/[levelName].ts
 - [GatekeeperOne](#level-13-gatekeeperone)
 - [GatekeeperTwo](#level-14-gatekeepertwo)
 - [NaughtCoin](#level-15-naughtcoin)
+- [Preservation](#level-16-preservarion)
 
 ## Level 1: Fallback
 
@@ -313,12 +314,18 @@ Note: This level can be solved without using an attacking contract, simply by us
 
 What we need to do is execute a standard ERC20 function, `approve`, and pass as parameters the address of the attacking contract and the total balance in tokens. This way, we are telling the NaughtyCoin contract that we are approving a third party to move tokens on our behalf. Then, from the attacking contract, we execute the `transferFrom` function to move all the tokens to the attacking contract and thus fulfill the requirement to pass the level.
 
-# Level 16: NaughtCoin
+# Level 16: Preservation
 
 ### What to look for:
 
--
+- When using `delegatecall`, we call a function of another contract but using the context of the current contract. As a result, the state variables of the current contract are the ones that will be modified, not the ones from the contract called with `delegatecall`.
+- Errors in the way state variables are defined when performing `delegatecall`.
 
 ### Resolution:
 
-[View code](./test/NaughtCoin.ts)
+[View code](./test/Preservation.ts)
+
+What we need to do here is understand how `delegatecall` and storage work. When we use `delegatecall`, we call a function from another contract but using the context of the current contract. Variables are matched by memory position, so even though in the LibraryContract contract we are modifying the `storedTime` variable, we are actually referring to memory position number 0.
+Therefore, if we invoke the `setFirstTime` function with the address of our attacking contract as an argument, we will be modifying the `timeZoneLibrary` variable.
+We can take advantage of this to define an attacking contract that has the same storage definition and modifies the `owner` variable.
+Then, we call the same function again, but this time passing the address of our wallet as a parameter to obtain ownership of the contract.
