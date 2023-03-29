@@ -329,3 +329,17 @@ Lo que debemos hacer aquí es entender cómo funcionan `delegatecall` y el almac
 Por lo tanto, si invocamos la función `setFirstTime` con la dirección de nuestro contrato atacante como argumento, estaremos modificando la variable `timeZoneLibrary`.
 Podemos aprovechar esto para definir un contrato atacante que tenga la misma definición de almacenamiento y modifique la variable `owner`.
 Luego, volvemos a invocar la misma función, pero esta vez pasando la dirección de nuestra billetera como parámetro para obtener la propiedad del contrato.
+
+# Nivel 17: Recovery
+
+### Qué buscar:
+
+- Cómo se calculan las direcciones de los contratos.
+
+### Resolución:
+
+[Ver código](./test/Recovery.ts)
+
+Nota: Podemos utilizar etherscan para ahorrarnos tener que calcular la dirección del contrato.
+
+Para completar el nivel, debemos averiguar la dirección del contrato SimpleToken para poder ejecutar la función `destruct`. Esto lo logramos considerando cómo se calcula una dirección de un contrato. para esto necesitamos la dirección del creador (Recovery) y su `nonce`. El `nonce` de un contrato comienza en 1 y se incrementa cada vez que realiza una creacion de un contrato. Como es la primera vez que va a crear un contrato, el valor para la creacion de SimpleToken será 1 . La dirección se calcula mediante el RLP encode de la dirección del creador y el `nonce`; luego, se calcula el hash y se toman los primeros 20 bytes. Una vez obtenido, llamamos a la función `destruct` y completamos el nivel

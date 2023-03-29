@@ -44,6 +44,7 @@ npx hardhat test ./test/[levelName].ts
 - [GatekeeperTwo](#level-14-gatekeepertwo)
 - [NaughtCoin](#level-15-naughtcoin)
 - [Preservation](#level-16-preservarion)
+- [Recovery](#level-16-recovery)
 
 ## Level 1: Fallback
 
@@ -329,3 +330,17 @@ What we need to do here is understand how `delegatecall` and storage work. When 
 Therefore, if we invoke the `setFirstTime` function with the address of our attacking contract as an argument, we will be modifying the `timeZoneLibrary` variable.
 We can take advantage of this to define an attacking contract that has the same storage definition and modifies the `owner` variable.
 Then, we call the same function again, but this time passing the address of our wallet as a parameter to obtain ownership of the contract.
+
+# Level 17: Recovery
+
+### What to look for:
+
+- How to calculate the addresses of contracts.
+
+### Resolution:
+
+[View code](./test/Recovery.ts)
+
+Note: We can use Etherscan to save ourselves the trouble of calculating the contract address.
+
+To complete the level, we need to find out the address of the SimpleToken contract so we can execute the `destruct` function. We can do this by considering how a contract address is calculated. We need the creator's address (Recovery) and their `nonce`. The `nonce` of a contract starts at 1 and increments each time a contract is created. As this is the first time a contract is being created, the value for the creation of SimpleToken will be 1. The address is calculated by RLP encoding the creator's address and the `nonce`; then, the hash is calculated and the first 20 bytes are taken. Once we have obtained the address, we call the `destruct` function and complete the level.
