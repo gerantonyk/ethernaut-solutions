@@ -44,7 +44,8 @@ npx hardhat test ./test/[levelName].ts
 - [GatekeeperTwo](#level-14-gatekeepertwo)
 - [NaughtCoin](#level-15-naughtcoin)
 - [Preservation](#level-16-preservarion)
-- [Recovery](#level-16-recovery)
+- [Recovery](#level-17-recovery)
+- [MagicNum](#level-18-magicnum)
 
 ## Level 1: Fallback
 
@@ -344,3 +345,17 @@ Then, we call the same function again, but this time passing the address of our 
 Note: We can use Etherscan to save ourselves the trouble of calculating the contract address.
 
 To complete the level, we need to find out the address of the SimpleToken contract so we can execute the `destruct` function. We can do this by considering how a contract address is calculated. We need the creator's address (Recovery) and their `nonce`. The `nonce` of a contract starts at 1 and increments each time a contract is created. As this is the first time a contract is being created, the value for the creation of SimpleToken will be 1. The address is calculated by RLP encoding the creator's address and the `nonce`; then, the hash is calculated and the first 20 bytes are taken. Once we have obtained the address, we call the `destruct` function and complete the level.
+
+# Level 18: MagicNum
+
+- [Learn about bytecode] (https://blog.openzeppelin.com/deconstructing-a-solidity-contract-part-i-introduction-832efd2d7737/)
+
+### What to look for:
+
+### Resolution:
+
+[View code](./test/MagicNum.ts)
+
+We need to manually create a contract, avoiding the Solidity boilerplate generated upon compilation (such as the free memory pointer, non-payable check, and function selector), and send our contract to the blockchain.
+To achieve this, we must create a contract with a maximum of 10 opcodes (10 bytes). We can do something very simple with the creation code to just return the runtime bytecode without any additional checks. And in the runtime bytecode, we only have to ensure that we save the value 42 in memory to later return it.
+Once we have the bytecode, we send it in a transaction to the address 0x0 to execute the contract creation. Then, we obtain the creation address and call the setSolver function passing it as an argument.

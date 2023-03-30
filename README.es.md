@@ -44,6 +44,8 @@ npx hardhat test ./test/[levelName].ts
 - [GatekeeperTwo](#nivel-14-gatekeepertwo)
 - [NaughtCoin](#nivel-15-naughtcoin)
 - [Preservation](#nivel-16-preservarion)
+- [Recovery](#nivel-17-recovery)
+- [MagicNum](#nivel-18-magicnum)
 
 ## Nivel 1: Fallback
 
@@ -343,3 +345,17 @@ Luego, volvemos a invocar la misma función, pero esta vez pasando la dirección
 Nota: Podemos utilizar etherscan para ahorrarnos tener que calcular la dirección del contrato.
 
 Para completar el nivel, debemos averiguar la dirección del contrato SimpleToken para poder ejecutar la función `destruct`. Esto lo logramos considerando cómo se calcula una dirección de un contrato. para esto necesitamos la dirección del creador (Recovery) y su `nonce`. El `nonce` de un contrato comienza en 1 y se incrementa cada vez que realiza una creacion de un contrato. Como es la primera vez que va a crear un contrato, el valor para la creacion de SimpleToken será 1 . La dirección se calcula mediante el RLP encode de la dirección del creador y el `nonce`; luego, se calcula el hash y se toman los primeros 20 bytes. Una vez obtenido, llamamos a la función `destruct` y completamos el nivel
+
+# Nivel 18: MagicNum
+
+### Qué buscar:
+
+- [Learn about bytecode] (https://blog.openzeppelin.com/deconstructing-a-solidity-contract-part-i-introduction-832efd2d7737/)
+
+### Resolución:
+
+[Ver código](./test/MagicNum.ts)
+
+Debemos crear un contrato manualmente, evitando el boilerplate que genera Solidity al compilar (como el puntero de memoria libre, la verificación de no pagabilidad y el selector de función), y enviar nuestro contrato a la blockchain.
+Para lograr esto, debemos crear un contrato con un máximo de 10 opcodes (10 bytes). Podemos hacer algo muy simple con el creation code para que retorne el runtime bytecode sin ningún chequeo adicional. Y en el runtime bytecode, solo tenemos que asegurarnos de guardar el valor 42 en la memoria para luego devolverlo.
+Una vez que tenemos el bytecode, lo enviamos en una transaccion a la dirección 0x0 para ejecutar la creación del contrato. Luego, obtenemos la dirección de creación y llamamos a la función setSolver pasandola como argumento.
