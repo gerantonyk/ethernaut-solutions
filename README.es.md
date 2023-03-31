@@ -46,6 +46,7 @@ npx hardhat test ./test/[levelName].ts
 - [Preservation](#nivel-16-preservarion)
 - [Recovery](#nivel-17-recovery)
 - [MagicNum](#nivel-18-magicnum)
+- [AlienCodex](#nivel-19-aliencodex)
 
 ## Nivel 1: Fallback
 
@@ -359,3 +360,17 @@ Para completar el nivel, debemos averiguar la dirección del contrato SimpleToke
 Debemos crear un contrato manualmente, evitando el boilerplate que genera Solidity al compilar (como el puntero de memoria libre, la verificación de no pagabilidad y el selector de función), y enviar nuestro contrato a la blockchain.
 Para lograr esto, debemos crear un contrato con un máximo de 10 opcodes (10 bytes). Podemos hacer algo muy simple con el creation code para que retorne el runtime bytecode sin ningún chequeo adicional. Y en el runtime bytecode, solo tenemos que asegurarnos de guardar el valor 42 en la memoria para luego devolverlo.
 Una vez que tenemos el bytecode, lo enviamos en una transaccion a la dirección 0x0 para ejecutar la creación del contrato. Luego, obtenemos la dirección de creación y llamamos a la función setSolver pasandola como argumento.
+
+# Nivel 19: AlienCodex
+
+### Qué buscar:
+
+- Operaciones aritméticas sin control previo a la versión 0.8.0 pueden provocar under/overflows. La práctica recomendada es utilizar la librería SafeMath para evitar este tipo de situaciones.
+- Cómo se almacenan las variables de estado en los smart contracts, en particular los arrays de tamaño indefinido.
+
+### Resolución:
+
+[Ver código](./test/AlienCodex.ts)
+
+Para resolver este nivel, debemos aprovechar dos vulnerabilidades. En primer lugar, podemos hacer uso del underflow que podemos generar al invocar la función `retract`. Para hacerlo, primero debemos llamar a `make_contact`, y luego a `retract`. De esta forma, obtenemos libertad para acceder al índice de `codex` hasta el número `type(uint256).max.`
+Sabemos que el almacenamiento de un array de tamaño indefinido es igual al hash de la posición más el índice. Y como podemos generar un overflow, debemos encontrar un índice que, sumado al hash, provoque un overflow y devuelva `0x01`. Debemos llamar a la función `revise` con dicho índice y la dirección del atacante como segundo parámetro.
