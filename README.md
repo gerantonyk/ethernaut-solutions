@@ -48,6 +48,8 @@ npx hardhat test ./test/[levelName].ts
 - [MagicNum](#level-18-magicnum)
 - [AlienCodex](#level-19-aliencodex)
 - [Denial](#level-20-denial)
+- [Shop](#level-21-shop)
+- [Dex](#level-22-dex)
 
 ## Level 1: Fallback
 
@@ -391,3 +393,29 @@ We know that the storage of an array of indefinite size is equal to the hash of 
 [View code](./test/Denial.ts)
 
 To carry out this attack, we can create an attacking contract that executes a loop to consume all gas once it receives ether. Then, we must set the attacker as a `partner` and submit the level. It is important to note that reverts from the contract in a call do not necessarily cause the transaction to revert, but in this case they do because they exhaust the available gas.
+
+# Level 21: Shop
+
+### What to look for:
+
+- Contracts can manipulate data seen by other contracts in any way they want.
+- It's unsafe to change the state based on external and untrusted contracts logic.
+
+### Resolution:
+
+[View code](./test/Shop.ts)
+
+We create an attacker contract that has an interface with the Shop contract, which includes the `buy` function and the `isSold` getter. In the same contract, we create the `price` function, which sets a `price` conditioned on the value of `isSold`: if it is false, the `price` will be 100, and if it is true, the `price` will be 1. Then, we execute the `buy` function through the attacker contract and manage to purchase the item at a `price` of 1.
+
+# Level 22: Dex
+
+### What to look for:
+
+- Contracts can manipulate data seen by other contracts in any way they want.
+- It's unsafe to change the state based on external and untrusted contracts logic.
+
+### Resolution:
+
+[View code](./test/Dex.ts)
+
+We need to create an attacker contract that performs trades for us, swapping the total `token1` we hold for `token2`, and then `token2` for `token1`. This will cause the prices to move and in each iteration we will obtain more tokens until we manage to get the entirety of one of them.

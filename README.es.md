@@ -48,6 +48,8 @@ npx hardhat test ./test/[levelName].ts
 - [MagicNum](#nivel-18-magicnum)
 - [AlienCodex](#nivel-19-aliencodex)
 - [Denial](#nivel-20-denial)
+- [Shop](#nivel-21-shop)
+- [Dex](#nivel-22-dex)
 
 ## Nivel 1: Fallback
 
@@ -387,3 +389,28 @@ Sabemos que el almacenamiento de un array de tamaño indefinido es igual al hash
 [Ver código](./test/Denial.ts)
 
 Para realizar este ataque, podemos crear un contrato atacante que ejecute un loop para consumir todo el gas una vez que reciba ether. Luego, debemos establecer el atacante como `partner` y hacer el submit. Es importante tener en cuenta que los reverts del contrato en un call no necesariamente hacen que la transacción se revierta, pero en este caso lo hacen porque agotan el gas disponible.
+
+# Nivel 21: Shop
+
+### Qué buscar:
+
+- No es seguro cambiar el estado del contrato basándose en la lógica de contratos externos y no confiables.
+- Los contratos pueden manipular los datos que son visibles para otros contratos de la manera que deseen.
+
+### Resolución:
+
+[Ver código](./test/Shop.ts)
+
+Creamos un contrato atacante que tenga una interfaz con el contrato Shop, que incluya la función`buy`y el getter `isSold`. En el mismo contrato, creamos la función `price`, que establece un precio condicionado según el valor de `isSold`: si es `false`, el precio será de 100, y si es `true`, el precio será de 1. Luego, ejecutamos la función `buy` a través del contrato atacante y logramos comprar el artículo a un precio de 1.
+
+# Nivel 22: Dex
+
+### Qué buscar:
+
+- En un DEX, el balance no debe ser parte del cálculo del precio, ya que es susceptible a manipulación.
+
+### Resolución:
+
+[Ver código](./test/Dex.ts)
+
+Debemos crear un contrato atacante que realice trades por nosotros, haciendo un swap del total de `token1` que poseemos por `token2`, y luego de `token2` por `token1`. Esto hará que los precios se muevan y en cada iteración obtengamos más tokens hasta que logremos quedarnos con la totalidad de uno de ellos.
