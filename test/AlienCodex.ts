@@ -2,13 +2,16 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 const { BigNumber } = ethers
 const { hexZeroPad, keccak256, hexlify } = ethers.utils
+
 describe("AlienCodex", async function () {
 
   it("Should become the owner", async function () {
-    const [deplyer, attacker] = await ethers.getSigners()
+    //setup+
+    const [deployer, attacker] = await ethers.getSigners()
     const AlienCodex = await ethers.getContractFactory("AlienCodex");
     const alienCodex = await AlienCodex.deploy();
     await alienCodex.deployed();
+    //setup-
 
     //1.Call make contact
     await alienCodex.connect(attacker).make_contact();

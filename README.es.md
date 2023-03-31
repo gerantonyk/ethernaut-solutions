@@ -47,6 +47,7 @@ npx hardhat test ./test/[levelName].ts
 - [Recovery](#nivel-17-recovery)
 - [MagicNum](#nivel-18-magicnum)
 - [AlienCodex](#nivel-19-aliencodex)
+- [Denial](#nivel-20-denial)
 
 ## Nivel 1: Fallback
 
@@ -374,3 +375,15 @@ Una vez que tenemos el bytecode, lo enviamos en una transaccion a la dirección 
 
 Para resolver este nivel, debemos aprovechar dos vulnerabilidades. En primer lugar, podemos hacer uso del underflow que podemos generar al invocar la función `retract`. Para hacerlo, primero debemos llamar a `make_contact`, y luego a `retract`. De esta forma, obtenemos libertad para acceder al índice de `codex` hasta el número `type(uint256).max.`
 Sabemos que el almacenamiento de un array de tamaño indefinido es igual al hash de la posición más el índice. Y como podemos generar un overflow, debemos encontrar un índice que, sumado al hash, provoque un overflow y devuelva `0x01`. Debemos llamar a la función `revise` con dicho índice y la dirección del atacante como segundo parámetro.
+
+# Nivel 20: Denial
+
+### Qué buscar:
+
+- Llamadas externas a contratos desconocidos puede crear attaques de denegacion de servicio si una cantidad fija de gas no es especificada
+
+### Resolución:
+
+[Ver código](./test/Denial.ts)
+
+Para realizar este ataque, podemos crear un contrato atacante que ejecute un loop para consumir todo el gas una vez que reciba ether. Luego, debemos establecer el atacante como `partner` y hacer el submit. Es importante tener en cuenta que los reverts del contrato en un call no necesariamente hacen que la transacción se revierta, pero en este caso lo hacen porque agotan el gas disponible.
