@@ -51,6 +51,7 @@ npx hardhat test ./test/[levelName].ts
 - [Shop](#nivel-21-shop)
 - [Dex](#nivel-22-dex)
 - [DexTwo](#nivel-23-dextwo)
+- [PuzzleWallet](#nivel-24-puzzlewallet)
 
 ## Nivel 1: Fallback
 
@@ -433,3 +434,18 @@ Después, llamamos a la función `swap` del contrato DEX, especificando como ori
 Para el token 2, el proceso es muy similar: llamamos a la función `swap` pero cambiamos el destino por el token 2 y el amount por 200.
 La razón es que, como hicimos el intercambio anterior, el saldo del token malicioso en el contrato DEX es de 200, y como el cálculo se realiza como amount*dest/orig, obtenemos 200*100/200 = 100.
 Finalmente, nos encontraríamos con que el saldo del DEX es de 0 para ambos tokens.
+
+# Nivel 24: PuzzleWallet
+
+### Qué buscar:
+
+- Colisión entre un contrato proxy y su implementación. La definición de las variables de estado debería estar en el contrato de implementación.
+- Funciones que realizan acciones de bajo nivel, como ejecutar más de una función en una misma transacción.
+
+### Resolución:
+
+[Ver código](./test/PuzzleWallet.ts)
+
+Primero, llamamos a la función `proposeNewAdmin` del proxy. Debido a la colisión en el almacenamiento al ejecutar esta función para proponer un nuevo `pendingAdmin`, estaremos modificando el `owner` en el contrato de implementación.
+Después de esto, como propietarios podemos agregarnos a la whitelist. Esto es necesario para ejecutar `multicall`. Lo ideal sería poder ejecutar `multicall` mandando dos veces la signature de `deposit`, pero tiene un control para evitar esto, por lo que debemos hacer la llamada a `multicall` pasando como funciones a ejecutar la misma `multicall` dos veces con una llamada a `deposit` cada una.
+Con esto, lograremos tener el balance suficiente como para extraer todo con `execute`. Luego, aprovechando una vez más el exploit de la colisión del contrato, llamamos a `setMaxBalance` con nuestro address como argumento. `maxBalance` resulta ser el `admin` en el proxy.

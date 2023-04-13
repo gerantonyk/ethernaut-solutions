@@ -51,6 +51,7 @@ npx hardhat test ./test/[levelName].ts
 - [Shop](#level-21-shop)
 - [Dex](#level-22-dex)
 - [DexTwo](#level-23-dextwo)
+- [PuzzleWallet](#level-24-puzzlewallet)
 
 ## Level 1: Fallback
 
@@ -429,7 +430,7 @@ We need to create an attacker contract that performs trades for us, swapping the
 
 ### Resolution:
 
-[See code](./test/Dex.ts)
+[See code](./test/DexTwo.ts)
 
 We create a malicious token to perform an exchange with the tokens we really want to obtain.
 First, we transfer 100 tokens to the DEX and then approve the spending (we could do it for 300, which is what we will use, or for the total of our balance, as those tokens have no value).
@@ -437,3 +438,18 @@ Next, we call the `swap` function of the DEX contract, specifying our malicious 
 For token 2, the process is very similar: we call the `swap` function but change the destination to token 2 and the amount to 200.
 The reason is that, as we made the previous exchange, the balance of the malicious token in the DEX contract is 200, and since the calculation is made as amount*dest/orig, we obtain 200*100/200 = 100.
 Finally, we find that the DEX balance is 0 for both tokens.
+
+# Level 24: PuzzleWallet
+
+### What to look for:
+
+- Collision between a proxy contract and its implementation. The definition of the state variables should be in the implementation contract.
+- Functions that perform low-level actions, such as executing more than one function in a single transaction.
+
+### Resolution:
+
+[See code](./test/PuzzleWallet.ts)
+
+First, we call the `proposeNewAdmin` function of the proxy. Due to the collision in the storage when executing this function to propose a new `pendingAdmin`, we will be modifying the owner in the implementation contract.
+After this, as owners, we can add ourselves to the whitelist. This is necessary to execute `multicall`. Ideally, we could execute `multicall` by sending the `deposit` signature twice, but there is a control to prevent this, so we must call `multicall` passing the same `multicall` function to execute twice, each with a call to `deposit`.
+With this, we will have enough balance to extract everything with execute. Then, taking advantage once again of the exploit of the collision in the contract, we call `setMaxBalance` with our address as an argument. `maxBalance` turns out to be the `admin` in the proxy.
