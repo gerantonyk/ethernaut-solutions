@@ -52,6 +52,7 @@ npx hardhat test ./test/[levelName].ts
 - [Dex](#nivel-22-dex)
 - [DexTwo](#nivel-23-dextwo)
 - [PuzzleWallet](#nivel-24-puzzlewallet)
+- [Motorbike](#nivel-25-motorbike)
 
 ## Nivel 1: Fallback
 
@@ -449,3 +450,16 @@ Finalmente, nos encontraríamos con que el saldo del DEX es de 0 para ambos toke
 Primero, llamamos a la función `proposeNewAdmin` del proxy. Debido a la colisión en el almacenamiento al ejecutar esta función para proponer un nuevo `pendingAdmin`, estaremos modificando el `owner` en el contrato de implementación.
 Después de esto, como propietarios podemos agregarnos a la whitelist. Esto es necesario para ejecutar `multicall`. Lo ideal sería poder ejecutar `multicall` mandando dos veces la signature de `deposit`, pero tiene un control para evitar esto, por lo que debemos hacer la llamada a `multicall` pasando como funciones a ejecutar la misma `multicall` dos veces con una llamada a `deposit` cada una.
 Con esto, lograremos tener el balance suficiente como para extraer todo con `execute`. Luego, aprovechando una vez más el exploit de la colisión del contrato, llamamos a `setMaxBalance` con nuestro address como argumento. `maxBalance` resulta ser el `admin` en el proxy.
+
+# Nivel 25: Motorbike
+
+### Qué buscar:
+
+- Funcion inicializadora en contrato de implementación no inicializada.
+
+### Resolución:
+
+[Ver código](./test/Motorbike.ts)
+
+Debemos interactuar directamente con el contrato de implementación. Primero, debemos obtener la dirección del contrato de implementación. La EIP 1967 define un storage slot en particular, y utilizamos `getStorageAt` en dicha posición para obtener la dirección. Luego, invocamos la función `initialize` para convertirnos en `upgrader`.
+Después, podemos invocar `upgradeAndCall` con nuestro contrato attackante que tiene una función fallback que permite hacer un `selfdestruct`. Al invocar `selfdestruct` con delegatecall, podemos ejecutar la función en el contexto del contrato Engine y destruirlo.

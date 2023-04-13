@@ -453,3 +453,16 @@ Finally, we find that the DEX balance is 0 for both tokens.
 First, we call the `proposeNewAdmin` function of the proxy. Due to the collision in the storage when executing this function to propose a new `pendingAdmin`, we will be modifying the owner in the implementation contract.
 After this, as owners, we can add ourselves to the whitelist. This is necessary to execute `multicall`. Ideally, we could execute `multicall` by sending the `deposit` signature twice, but there is a control to prevent this, so we must call `multicall` passing the same `multicall` function to execute twice, each with a call to `deposit`.
 With this, we will have enough balance to extract everything with execute. Then, taking advantage once again of the exploit of the collision in the contract, we call `setMaxBalance` with our address as an argument. `maxBalance` turns out to be the `admin` in the proxy.
+
+# Level 25: Motorbike
+
+### What to look for:
+
+- Initializer function in implementation contract not initialized.
+
+### Resolution:
+
+[See code](./test/Motorbike.ts)
+
+We must interact directly with the implementation contract. First, we need to obtain the address of the implementation contract. EIP 1967 defines a specific storage slot, and we use `getStorageAt` at that position to obtain the implementation address. Then, we call the `initialize` function to become an `upgrader`.
+After that, we can invoke `upgradeAndCall` with our attacking contract, which has a fallback function that allows for `selfdestruct`. By calling `selfdestruct` with delegatecall, we can execute the function in the context of the Engine contract and destroy it.

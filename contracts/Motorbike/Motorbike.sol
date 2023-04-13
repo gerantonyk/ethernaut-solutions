@@ -2,8 +2,8 @@
 
 pragma solidity <0.7.0;
 
-import "./helpers/Address06.sol";
-import "./helpers/Initializable.sol";
+import "../helpers/Address06.sol";
+import "../helpers/Initializable.sol";
 
 contract Motorbike {
     // keccak-256 hash of "eip1967.proxy.implementation" subtracted by 1
