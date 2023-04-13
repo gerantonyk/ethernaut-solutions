@@ -412,6 +412,24 @@ Creamos un contrato atacante que tenga una interfaz con el contrato Shop, que in
 
 ### Resolución:
 
-[Ver código](./test/DexTwo.ts)
+[Ver código](./test/Dex.ts)
 
 Debemos crear un contrato atacante que realice trades por nosotros, haciendo un swap del total de `token1` que poseemos por `token2`, y luego de `token2` por `token1`. Esto hará que los precios se muevan y en cada iteración obtengamos más tokens hasta que logremos quedarnos con la totalidad de uno de ellos.
+
+# Nivel 23: Dex
+
+### Qué buscar:
+
+- En un DEX, el balance no debe ser parte del cálculo del precio, ya que es susceptible a manipulación.
+- Es importante validar los datos. En este caso la vulnerabilidad viene porque no se está controlando que los tokens con los que se interactua sean los definidos previamente
+
+### Resolución:
+
+[Ver código](./test/DexTwo.ts)
+
+Creamos un token malicioso para realizar intercambio con los tokens que realmente deseamos obtener.
+En primer lugar, transferiríamos 100 tokens al DEX y, a continuación, aprobamos el gasto (podríamos hacerlo por 300, que es lo que utilizaremos, o por la totalidad de nuestro saldo, ya que esos tokens no tienen ningún valor).
+Después, llamamos a la función `swap` del contrato DEX, especificando como origen nuestro token malicioso y como destino el token 1, con un valor de 100. Con esto, ya nos aseguramos de conseguir los 100 tokens del token 1.
+Para el token 2, el proceso es muy similar: llamamos a la función `swap` pero cambiamos el destino por el token 2 y el amount por 200.
+La razón es que, como hicimos el intercambio anterior, el saldo del token malicioso en el contrato DEX es de 200, y como el cálculo se realiza como amount*dest/orig, obtenemos 200*100/200 = 100.
+Finalmente, nos encontraríamos con que el saldo del DEX es de 0 para ambos tokens.
