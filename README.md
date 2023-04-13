@@ -50,6 +50,7 @@ npx hardhat test ./test/[levelName].ts
 - [Denial](#level-20-denial)
 - [Shop](#level-21-shop)
 - [Dex](#level-22-dex)
+- [DexTwo](#level-23-dextwo)
 
 ## Level 1: Fallback
 
@@ -411,8 +412,7 @@ We create an attacker contract that has an interface with the Shop contract, whi
 
 ### What to look for:
 
-- Contracts can manipulate data seen by other contracts in any way they want.
-- It's unsafe to change the state based on external and untrusted contracts logic.
+- In a DEX (decentralized exchange), the balance should not be included in the price calculation, as it can be manipulated.
 
 ### Resolution:
 

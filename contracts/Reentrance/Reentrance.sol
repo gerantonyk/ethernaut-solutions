@@ -19,13 +19,10 @@ contract Reentrance {
     function withdraw(uint _amount) public {
         if (balances[msg.sender] >= _amount) {
             (bool result, ) = msg.sender.call{value: _amount}("");
-            console.log("se trata de ejecutar mas de una vez", msg.sender);
             if (result) {
                 _amount;
             }
-            console.log("antes", balances[msg.sender]);
             balances[msg.sender] -= _amount;
-            console.log("despues", balances[msg.sender]);
         }
     }
 

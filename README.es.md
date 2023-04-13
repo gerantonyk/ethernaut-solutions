@@ -50,6 +50,7 @@ npx hardhat test ./test/[levelName].ts
 - [Denial](#nivel-20-denial)
 - [Shop](#nivel-21-shop)
 - [Dex](#nivel-22-dex)
+- [DexTwo](#nivel-23-dextwo)
 
 ## Nivel 1: Fallback
 
@@ -411,6 +412,6 @@ Creamos un contrato atacante que tenga una interfaz con el contrato Shop, que in
 
 ### Resolución:
 
-[Ver código](./test/Dex.ts)
+[Ver código](./test/DexTwo.ts)
 
 Debemos crear un contrato atacante que realice trades por nosotros, haciendo un swap del total de `token1` que poseemos por `token2`, y luego de `token2` por `token1`. Esto hará que los precios se muevan y en cada iteración obtengamos más tokens hasta que logremos quedarnos con la totalidad de uno de ellos.
