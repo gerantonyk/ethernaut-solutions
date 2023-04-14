@@ -466,3 +466,16 @@ With this, we will have enough balance to extract everything with execute. Then,
 
 We must interact directly with the implementation contract. First, we need to obtain the address of the implementation contract. EIP 1967 defines a specific storage slot, and we use `getStorageAt` at that position to obtain the implementation address. Then, we call the `initialize` function to become an `upgrader`.
 After that, we can invoke `upgradeAndCall` with our attacking contract, which has a fallback function that allows for `selfdestruct`. By calling `selfdestruct` with delegatecall, we can execute the function in the context of the Engine contract and destroy it.
+
+# Level 26: DoubleEntryPoint
+
+### What to look for:
+
+- Calldata manipulations.
+
+### Resolution:
+
+[See code](./test/DoubleEntryPoint.ts)
+
+By examining the contracts, we can see that if we call the `sweepTokens` function of the CryptoVault contract with the LegacyToken, we will cause that token to delegate the transfer (executing `delegateTransfer`) to the DoubleEntryPoint token, which is the underlying token and is not supposed to be able to perform sweeps. To prevent this, we can take advantage of the `fortaNotify` modifier and create a bot that, in case this situation arises, issues an alert to revert the transaction.
+To achieve this, we will control the `msgData` variable (which contains the `calldata` of the original call). We will check the first 4 bytes and compare them with the function signature, and we will verify if the original sender matches the address of CryptoVault. If this is the case, we will load the notification and make the transaction revert.

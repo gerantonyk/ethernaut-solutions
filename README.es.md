@@ -463,3 +463,16 @@ Con esto, lograremos tener el balance suficiente como para extraer todo con `exe
 
 Debemos interactuar directamente con el contrato de implementación. Primero, debemos obtener la dirección del contrato de implementación. La EIP 1967 define un storage slot en particular, y utilizamos `getStorageAt` en dicha posición para obtener la dirección. Luego, invocamos la función `initialize` para convertirnos en `upgrader`.
 Después, podemos invocar `upgradeAndCall` con nuestro contrato attackante que tiene una función fallback que permite hacer un `selfdestruct`. Al invocar `selfdestruct` con delegatecall, podemos ejecutar la función en el contexto del contrato Engine y destruirlo.
+
+# Nivel 26: DoubleEntryPoint
+
+### Qué buscar:
+
+- Manipulaciones de calldata.
+
+### Resolución:
+
+[Ver código](./test/DoubleEntryPoint.ts)
+
+Al observar los contratos, podemos ver que si llamamos a la función `sweepTokens` del contrato CryptoVault con el LegacyToken, haremos que dicho token delegue la transferencia (ejecutando `delegateTransfer`) al token DoubleEntryPoint, que es el token subyacente y que supuestamente no debería poder hacer sweeps. Para evitar esto, podemos aprovechar el modificador `fortaNotify` y crear un bot que, en caso de que se presente esta situación, emita una alerta para revertir la transacción.
+Para lograr esto, controlaremos la variable `msgData` (que contiene el `calldata` de la llamada anterior). Verificaremos los primeros 4 bytes y los compararemos con la firma de la función, y comprobaremos si el remitente original coincide con la dirección de CryptoVault. Si ese es el caso, cargaremos la notificación y haremos que la transacción se revierta.
