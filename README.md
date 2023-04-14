@@ -52,6 +52,9 @@ npx hardhat test ./test/[levelName].ts
 - [Dex](#level-22-dex)
 - [DexTwo](#level-23-dextwo)
 - [PuzzleWallet](#level-24-puzzlewallet)
+- [Motorbike](#level-25-motorbike)
+- [DoubleEntryPoint](#level-26-doubleentrypoint)
+- [GoodSamaritan](#level-27-goodsamaritan)
 
 ## Level 1: Fallback
 
@@ -479,3 +482,17 @@ After that, we can invoke `upgradeAndCall` with our attacking contract, which ha
 
 By examining the contracts, we can see that if we call the `sweepTokens` function of the CryptoVault contract with the LegacyToken, we will cause that token to delegate the transfer (executing `delegateTransfer`) to the DoubleEntryPoint token, which is the underlying token and is not supposed to be able to perform sweeps. To prevent this, we can take advantage of the `fortaNotify` modifier and create a bot that, in case this situation arises, issues an alert to revert the transaction.
 To achieve this, we will control the `msgData` variable (which contains the `calldata` of the original call). We will check the first 4 bytes and compare them with the function signature, and we will verify if the original sender matches the address of CryptoVault. If this is the case, we will load the notification and make the transaction revert.
+
+# Level 27: GoodSamaritan
+
+### What to look for:
+
+- Invocations to external contracts through interfaces, where the contract address can be chosen by any user. In these cases, malicious contracts can be used to obtain unexpected results.
+
+### Resolution:
+
+[See code](./test/GoodSamaritan.ts)
+
+The only call we can make to GoodSamaritan is from `requestDonation`. When executed, this function calls the Wallet contract with the `donate10` function. If this function fails with specific bytes, `transfRemainder` is executed. These particular bytes must have the same hash as `abi.encodeWithSignature("NotEnoughBalance()")`.
+
+If we look into `donate10`, we see that the `transfer` function of the Coin contract is invoked. This function has a peculiarity: if the caller is a contract, it executes the `notify` function on that contract. This gives us the opportunity to revert the function in cases of interest and return the requested bytecode to the caller. For this, we create an "attacker" contract that will execute the call to GoodSamaritan and will have a `notify` function to be invoked from the Coin contract. We will make it fail when trying to `donate10` by reverting with the error NotEnoughBalance, which conveniently functions as the signature of a function. Then, we will achieve the execution of `transfRemainder`.
