@@ -55,6 +55,7 @@ npx hardhat test ./test/[levelName].ts
 - [Motorbike](#nivel-25-motorbike)
 - [DoubleEntryPoint](#nivel-26-doubleentrypoint)
 - [GoodSamaritan](#nivel-27-goodsamaritan)
+- [GatekeeperThree](#nivel-28-gatekeperthree)
 
 ## Nivel 1: Fallback
 
@@ -481,13 +482,51 @@ Para lograr esto, controlaremos la variable `msgData` (que contiene el `calldata
 
 # Level 27: GoodSamaritan
 
-### What to look for:
+### Qué buscar:
 
 - Invocaciones a contratos externos mediante interfaces, donde la dirección del contrato puede ser elegida por cualquier usuario.. En estos casos se pueden utilizar contratos con código malicioso y así obtener resultados inesperados.
 
-### Resolution:
+### Resolución:
 
 [See code](./test/GoodSamaritan.ts)
 
 La única llamada que podemos hacer a GoodSamaritan es desde `requestDonation`. Esta función, al ejecutarse, llama al contrato Wallet con la función `donate10`. Si esta función falla con unos bytes en particular, se ejecuta `transfRemainder`. Estos bytes en particular deben tener el mismo hash que `abi.encodeWithSignature("NotEnoughBalance()")`.
 Si entramos en `donate10`, veremos que se invoca la función `transfer` del contrato Coin. Esta función tiene una particularidad: si el llamador es un contrato, ejecuta la función `notify` sobre dicho contrato. Esto nos da la oportunidad de revertir la función en los casos que nos interese y retornar al llamador el bytecode solicitado. Para esto, creamos un contrato "attacker" que ejecutará el call a GoodSamaritan y tendrá una función `notify` para que sea invocado desde el contrato Coin. Haremos que falle cuando intente `donate10` revirtiendo con el error `NotEnoughBalance`, que casualmente funciona como la signatura de una función. Luego, lograremos que se ejecute `transfRemainder`.
+
+# Level 28: GatekeeperThree
+
+### Qué buscar:
+
+- Todas las variables de estado de un contrato pueden ser leídas sin importar si están definidas como `public` o `private`, debido a la naturaleza pública de la información que se almacena en la blockchain. También se puede obtener toda la metadata relacionada con la transacción.
+- Las ejecuciones no controladas de `send` pueden revertir la operación sin revertir la transacción y pueden generar reentradas.
+
+### Resolución:
+
+[See code](./test/GatekeeperThree.ts)
+
+Encontramos tres modifiers que definen tres gates que debemos superar:
+
+Gate one:
+
+```solidity
+    require(msg.sender == owner);
+    require(tx.origin != owner);
+```
+
+El `msg.sender` debe ser el owner pero no el `tx.origin`. Lo resolvemos utilizando un contrato atacante para que el `msg.sender` sea el address del contrato y nuestra eoa el `tx.origin`.
+
+Gate two:
+
+```solidity
+    require(allow_entrance == true);
+```
+
+Para el segundo gate, debemos averiguar la contraseña para convertir la variable allow_entrance en `true`. Esto lo hacemos llamando a la función createTrick. Tenemos dos opciones: podemos usar el recibo de la transacción para ver el `block.timestamp`, o podemos aprovechar lo que sabemos acerca de cómo Solidity almacena las variables de estado y llamar a `getStorageAt` en la posición 0x02. Luego llamamos a `getAllowance` con el valor que obtuvimos del almacenamiento y logramos que `allow_entrance` esté en `true`.
+
+Gate Three
+
+```solidity
+    if (address(this).balance > 0.001 ether && payable(owner).send(0.001 ether) == false)
+```
+
+Para este gate, necesitas tener un saldo mayor a 0.001 ETH. Para lograrlo, te transferimos 0.0011 ETH. En el contrato atacante, vamos a agregar la función `receive` y vamos a poner un `revert` para que la segunda parte del `require` resulte en `false`.

