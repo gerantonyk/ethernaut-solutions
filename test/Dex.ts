@@ -35,9 +35,9 @@ describe("Dex", async function () {
     const dexAttacker = await DexAttacker.connect(attacker).deploy(dex.address, token1.address, token2.address);
     await dexAttacker.deployed();
 
-    //2.Send tokens to attacker
-    await token1.transfer(attacker.address, 10)
-    await token2.transfer(attacker.address, 10)
+    //2.Send tokens to Dex attacker
+    await token1.transfer(dexAttacker.address, 10)
+    await token2.transfer(dexAttacker.address, 10)
 
     //3.Call attacker
     await dexAttacker.callSwap()
