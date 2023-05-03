@@ -370,7 +370,7 @@ We need to manually create a contract, avoiding the Solidity boilerplate generat
 To achieve this, we must create a contract with a maximum of 10 opcodes (10 bytes). We can do something very simple with the creation code to just return the runtime bytecode without any additional checks. And in the runtime bytecode, we only have to ensure that we save the value 42 in memory to later return it.
 Once we have the bytecode, we send it in a transaction to the address 0x0 to execute the contract creation. Then, we obtain the creation address and call the setSolver function passing it as an argument.
 
-# Level 19: MagicNum
+# Level 19: AlienCodex
 
 - [Learn about bytecode] (https://blog.openzeppelin.com/deconstructing-a-solidity-contract-part-i-introduction-832efd2d7737/)
 
