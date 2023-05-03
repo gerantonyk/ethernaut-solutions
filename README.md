@@ -61,7 +61,7 @@ npx hardhat test ./test/[levelName].ts
 
 ### What to look for:
 
-- Functions like receiving and `fallback` and `fallback` which can alter access control
+- Functions like `receiving` and `fallback` which can alter access control
 
 ### Resolution:
 
