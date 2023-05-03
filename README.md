@@ -358,9 +358,9 @@ To complete the level, we need to find out the address of the SimpleToken contra
 
 # Level 18: MagicNum
 
-- [Learn about bytecode] (https://blog.openzeppelin.com/deconstructing-a-solidity-contract-part-i-introduction-832efd2d7737/)
-
 ### What to look for:
+
+- [Learn about bytecode] (https://blog.openzeppelin.com/deconstructing-a-solidity-contract-part-i-introduction-832efd2d7737/)
 
 ### Resolution:
 
@@ -371,8 +371,6 @@ To achieve this, we must create a contract with a maximum of 10 opcodes (10 byte
 Once we have the bytecode, we send it in a transaction to the address 0x0 to execute the contract creation. Then, we obtain the creation address and call the setSolver function passing it as an argument.
 
 # Level 19: AlienCodex
-
-- [Learn about bytecode] (https://blog.openzeppelin.com/deconstructing-a-solidity-contract-part-i-introduction-832efd2d7737/)
 
 ### What to look for:
 
